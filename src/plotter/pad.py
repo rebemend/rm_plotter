@@ -70,11 +70,13 @@ class pad:
         self.yMax = 1.
         # the logarithm of the y-axis is saved, as it affects the y-range
         self.isLogY = False
+        # if user specifies y-range, we do not want to derive it automatically
+        self.customYrange = False
 
         self.basis: Optional[histo] = None
 
-    def margins(self, up: float = 0.04, down: float = 0.2,
-                left: float = 0.20, right: float = 0.05) -> None:
+    def margins(self, up: float = 0.04, down: float = 0.25,
+                left: float = 0.18, right: float = 0.05) -> None:
         """ Set margins of the pad with default values,
         which work for the atlas style.
 
@@ -121,14 +123,17 @@ class pad:
         Arguments:
             h (``histo``): added histogram
         """
-        if self.histos == []:
-            self.yMin = h.th.GetMinimum(0)
-            self.yMax = h.th.GetMaximum()
-        else:
-            if self.yMin > h.th.GetMinimum(0):
+
+        # if custom range defined, skip the automatic derivation
+        if not self.customYrange:
+            if self.histos == []:
                 self.yMin = h.th.GetMinimum(0)
-            if self.yMax < h.th.GetMaximum():
-                self.yMin = h.th.GetMaximum()
+                self.yMax = h.th.GetMaximum()
+            else:
+                if self.yMin > h.th.GetMinimum(0):
+                    self.yMin = h.th.GetMinimum(0)
+                if self.yMax < h.th.GetMaximum():
+                    self.yMin = h.th.GetMaximum()
         self.histos.append(h)
 
     def plot_histos(self) -> None:
@@ -153,7 +158,10 @@ class pad:
                            lineColor=ROOT.kWhite, option="hist")
         self.basis.th.Reset()
         self._set_basis_axis_title()
-        self._set_basis_yrange()
+        if not self.customYrange:
+            self._set_basis_yrange(margin=1.3)
+        else:
+            self._set_basis_yrange(margin=1)
 
         # TODO: style config!!!
         self.basis.th.GetXaxis().SetTitleOffset(2.2)
@@ -195,7 +203,7 @@ class pad:
         if self.basis is not None:
             self._set_basis_axis_title()
 
-    def _set_basis_yrange(self) -> None:
+    def _set_basis_yrange(self, margin=1) -> None:
         """ Sets rangeof the y-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
@@ -203,7 +211,7 @@ class pad:
 
         # for the maximum you alway want to have some margin
         # TODO: margin as class variable?
-        margin = 1.3
+        
         if not self.isLogY:
             self.basis.th.GetYaxis().SetRangeUser(self.yMin, self.yMax*margin)
         # for log it is little bit more complicated
@@ -225,6 +233,7 @@ class pad:
         """
         self.yMin = yMin
         self.yMax = yMax
+        self.customYrange = True
 
         if self.basis is not None:
             self._set_basis_yrange()

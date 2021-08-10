@@ -33,9 +33,19 @@ class histo:
         self.option = option
 
         th.SetTitle(title)
-        th.SetLineColor(lineColor)
+        self.set_lineColor(lineColor)
         if fillColor is not None:
-            th.SetFillColor(fillColor)
+            self.set_fillColor(fillColor)
+    
+    def set_fillColor(self, fillColor: int):
+        """ Sets fill color """
+        self.fillColor = fillColor
+        self.th.SetFillColor(fillColor)
+
+    def set_lineColor(self, lineColor: int):
+        """ Sets line color """
+        self.lineColor = lineColor
+        self.th.SetLineColor(lineColor)
 
     def draw(self, suffix: str = "", option: Optional[str] = None) -> None:
         """ TH1.Draw wrapper,
@@ -67,14 +77,23 @@ class histo:
         """
         thHelper.divide_ratio(self.th, otherHisto.th)
 
-    def get_ratio(self, otherHisto: "histo", suffix: str = "ratio") -> TH1:
+    def get_ratio(self, otherHisto: "histo", suffix: str = "ratio", fillToLine: bool = False) -> "histo":
         """ Returns clone of the saved histogram and divides by otherHist.
         All the other properties are copied.
 
         Arguments:
             otherHist (``histo``): histogram to divide by
+            suffix (``str``): suffix behind the name of the histogram
+            fillToLine (``bool``): switch from fill to line
         """
         th = self.th.Clone(suffix)
         thHelper.divide_ratio(th, otherHisto.th)
-        return histo(self.title+"_"+suffix, th, lineColor=self.lineColor,
-                     fillColor=self.fillColor, option=self.option)
+
+        # switch colors if requested
+        fillColor = None if fillToLine else self.fillColor 
+        if fillColor is None:
+            th.SetFillColor(ROOT.kWhite)
+        lineColor = self.fillColor if fillToLine else self.lineColor
+
+        return histo(self.title+"_"+suffix, th, lineColor=lineColor,
+                     fillColor=None, option=self.option)

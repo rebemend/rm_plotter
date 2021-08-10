@@ -8,16 +8,18 @@ ROOT.gROOT.SetBatch(True)
 
 def SetAtlasStyle():
   atlasStyle = 0
-  log.info("Applying ATLAS style settings...")
+  log.info("Applying ATLAS 2 style settings...")
   if atlasStyle==0:
     atlasStyle = AtlasStyle()
-  ROOT.gROOT.SetStyle("ATLAS")
+  ROOT.gROOT.SetStyle("ATLAS2")
   ROOT.gROOT.ForceStyle()
 
-  return atlasStyle
+
+  ROOT.gStyle.SetErrorX(0.5)
+#  return atlasStyle
 
 def AtlasStyle():
-  atlasStyle = TStyle("ATLAS","Atlas style")
+  atlasStyle = TStyle("ATLAS2","Atlas style")
 
   # use plain black on white colors
   icol=0 # WHITE
@@ -71,7 +73,8 @@ def AtlasStyle():
   atlasStyle.SetLineStyleString(2,"[12 12]") # postscript dashes
 
   # get rid of X error bars (as recommended in ATLAS figure guidelines)
-  atlasStyle.SetErrorX(0.0001)
+  # atlasStyle.SetErrorX(0.0001)
+  atlasStyle.SetErrorX(0.5)
   # get rid of error bar caps
   atlasStyle.SetEndErrorSize(0.)
 
@@ -89,3 +92,17 @@ def AtlasStyle():
   return atlasStyle
 
 #SetAtlasStyle()
+
+def ATLASLabel(x, y, text = "", color = ROOT.kBlack):
+  l = ROOT.TLatex()
+  l.SetNDC()
+  l.SetTextFont(72)
+  l.SetTextColor(color)
+  delx = 0.115*696*ROOT.gPad.GetWh()/(472*ROOT.gPad.GetWw())
+  l.DrawLatex(x,y,"ATLAS")
+  if text:
+    p = ROOT.TLatex()
+    p.SetNDC()
+    p.SetTextFont(42)
+    p.SetTextColor(color)
+    p.DrawLatex(x+delx,y,text)
