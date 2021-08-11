@@ -1,53 +1,17 @@
-from .histo import histo
 from . import loader
-from . import styler
+from .histo import histo
 import ROOT
-from ROOT import TPad, TCanvas
-from typing import List, Dict, Optional
+from ROOT import TPad
+from typing import List, Dict, Optional, Any
 
 import logging
 log = logging.getLogger(__name__)
 
 
-class canvas:
-    """ Wrapper around TCanvas
-
-    Automates few thinks which need to be done every time
-    (e.g. drawin pads)"""
-    def __init__(self, name: str, x: int = 800, y: int = 800) -> None:
-        """
-        Arguments:
-            name (``str``): name of canvas, used also as title
-            x (``int``): x width of the canvas
-            y (``int``): y width of the canvas
-        """
-        self.tcan = TCanvas(name, name, x, y)
-        # TODO: still not 100% convinced we need a Dict and not just List
-        self.pads: Dict[str, pad] = {}
-
-    def add_pad(self, p: "pad"):
-        """ Adds pad to the canvas
-
-        Arguments:
-            p (``pad``): pad to be added to the canvas
-        """
-        self.pads[p.name] = p
-        self.tcan.cd()
-        p.tpad.Draw()
-
-    def save(self, path: str):
-        """ Simply calls SaveAs from TCanvas
-
-        Arguments:
-            path (``str``): path to target file
-        """
-        # TODO: maybe add automatic saving with multiple suffixes or something?
-        self.tcan.SaveAs(path)
-
-
 class pad:
     """ Wrapper around TPad
     """
+
     def __init__(self, name: str, xl: int = 0, xh: int = 1,
                  yl: int = 0, yh: int = 1,
                  configPath: str = "configs/pad.json") -> None:
@@ -63,13 +27,15 @@ class pad:
         self.tpad = TPad(name, name, xl, yl, xh, yh)
         self.name = name
 
-        self.config = loader.load_config(configPath)
+        self.config: Dict[str, Any] = {}
+        if configPath is not "":
+            self.config = loader.load_config(configPath)
         # set default margins
         self.margins()
 
         # if margins in config, update:
-        if "margins" in self.config:
-            styler.pad_margin(self, self.config["margins"])
+        if self.config is not {} and "margins" in self.config:
+            self.style_pad_margin(self.config["margins"])
 
         self.histos: List[histo] = []
         self.xTitle = ""
@@ -162,7 +128,7 @@ class pad:
         # histograms
         # TODO: add histo.clone??
         self.basis = histo("", self.histos[0].th.Clone("basis"),
-                           lineColor=ROOT.kWhite, option="hist")
+                           lineColor=ROOT.kWhite, drawOption="hist")
         self.basis.th.Reset()
         self._set_basis_axis_title()
         if not self.customYrange:
@@ -171,8 +137,8 @@ class pad:
             self._set_basis_yrange(margin=1)
 
         # if margins in config, update:
-        if "basis" in self.config:
-            styler.pad_basis(self, self.config["basis"])
+        if self.config is not {} and "basis" in self.config:
+            self.style_pad_basis(self.config["basis"])
 
         self.basis.draw()
 
@@ -235,3 +201,53 @@ class pad:
 
         if self.basis is not None:
             self._set_basis_yrange()
+
+
+    def style_pad_margin(self, style: Dict[str, Any]) -> None:
+
+        log.debug("Updating margin style")
+
+        for opt, set in style.items():
+            if "margin_up" in opt:
+                self.tpad.SetTopMargin(set)
+            elif "margin_down" in opt:
+                self.tpad.SetTopMargin(set)
+            elif "margin_left" in opt:
+                self.tpad.SetLeftMargin(set)
+            elif "margin_right" in opt:
+                self.tpad.SetRightMargin(set)
+            else:
+                log.error(f"Unknown option {opt}")
+                raise RuntimeError
+
+
+    def style_pad_basis(self, style: Dict[str, Any]) -> None:
+
+        if self.basis is None:
+            log.error("Called pad style but no basis yet!")
+            raise RuntimeError
+        log.debug("Updating basis style")
+
+        for opt, set in style.items():
+            if "x_" in opt:
+                axis = self.basis.th.GetXaxis()
+            else:
+                axis = self.basis.th.GetYaxis()
+
+            if "titleOffset" in opt:
+                axis.SetTitleOffset(set)
+            elif "titleSize" in opt:
+                axis.SetTitleSize(set)
+            elif "titleFont" in opt:
+                axis.SetTitleFont(set)
+            elif "labelSize" in opt:
+                axis.SetLabelSize(set)
+            elif "labelFont" in opt:
+                axis.SetLabelFont(set)
+            elif "n_div" in opt:
+                if len(set) != 2:
+                    log.error("n_div option in wrong format, need two items")
+                self.basis.th.SetNdivisions(set[0], set[1])
+            else:
+                log.error(f"Unknown option {opt}")
+                raise RuntimeError

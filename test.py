@@ -1,4 +1,6 @@
-from plotter import collection, dataset, histo, pad, canvas, atlas, legend
+from plotter import collection, dataset
+from plotter import histo, pad, canvas, atlas, legend
+from plotter import loader
 import ROOT
 
 import logging
@@ -8,7 +10,6 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 atlas.SetAtlasStyle()
-ROOT.gStyle.SetErrorX(0.5)
 
 cData = collection("Data", 1)
 cData.add_dataset(dataset("Data", "test/Nominal/data.root", 1))
@@ -16,9 +17,9 @@ cData.add_dataset(dataset("Data", "test/Nominal/data.root", 1))
 cBkg = collection("Bkg", 1)
 cBkg.add_dataset(dataset("Bkg", "test/Nominal/background.root", 1))
 
-hD = histo("Data", cData.get_th("ptll_data"), option="epx0")
-hB = histo("Top+EW", cBkg.get_th("ptll_topew"), fillColor=ROOT.kRed)
-hB.th.SetMarkerSize(0)
+hD = histo("Data", cData.get_th("ptll_data"), configPath="configs/data.json")
+hB = histo("Top+EW", cBkg.get_th("ptll_topew"), fillColor=ROOT.kRed,
+           configPath="configs/mc.json")
 
 c = canvas("canvas")
 
@@ -34,11 +35,8 @@ p.plot_histos()
 hR = hD.get_ratio(hD)
 hR.set_fillColor(ROOT.kGray+1)
 hR.set_lineColor(ROOT.kGray+1)
-hR.th.SetFillStyle(3154)
-hR.th.SetLineStyle(3)
-hR.th.SetMarkerSize(0)
-hR.option = "e2"
-
+cfgErr = loader.load_config("configs/err.json")
+hR.style_histo(cfgErr)
 
 pR = pad("ratio", yl=0.3, yh=0.5)
 c.add_pad(pR)

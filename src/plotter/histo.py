@@ -1,7 +1,8 @@
 import ROOT
 from ROOT import TH1
-from plotter import thHelper
-from typing import Optional
+from . import thHelper
+from . import loader
+from typing import Optional, Dict, Any
 
 import logging
 log = logging.getLogger(__name__)
@@ -17,8 +18,10 @@ class histo:
         all properties needed for plotting, all the others
         are handled by other classes
     """
+
     def __init__(self, title: str, th: TH1, lineColor: int = ROOT.kBlack,
-                 fillColor: Optional[int] = None, option: str = "histe") -> None:
+                 fillColor: Optional[int] = None, drawOption: str = "histe",
+                 configPath: str = "") -> None:
         """
         Arguments:
             th (``TH1``): ROOT histogram
@@ -30,12 +33,17 @@ class histo:
         self.title = title
         self.lineColor = lineColor
         self.fillColor = fillColor
-        self.option = option
+        self.drawOption = drawOption
 
         th.SetTitle(title)
         self.set_lineColor(lineColor)
         if fillColor is not None:
             self.set_fillColor(fillColor)
+
+        self.config: Dict[str, Any] = {}
+        if configPath is not "":
+            self.config = loader.load_config(configPath)
+            self.style_histo(self.config)
 
     def set_fillColor(self, fillColor: int):
         """ Sets fill color """
@@ -47,16 +55,16 @@ class histo:
         self.lineColor = lineColor
         self.th.SetLineColor(lineColor)
 
-    def draw(self, suffix: str = "", option: Optional[str] = None) -> None:
+    def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
         """ TH1.Draw wrapper,
 
         Arguments
             option (``str``): if want to overwrite self.option
             suffix (``str``): suffix afteert option, mainly for "same"
         """
-        if option is None:
-            option = self.option
-        self.th.Draw(option+suffix)
+        if drawOption is None:
+            drawOption = self.drawOption
+        self.th.Draw(drawOption+suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
         """ Add ROOT::TH1::Divide to histo level
@@ -77,7 +85,8 @@ class histo:
         """
         thHelper.divide_ratio(self.th, otherHisto.th)
 
-    def get_ratio(self, otherHisto: "histo", suffix: str = "ratio", fillToLine: bool = False) -> "histo":
+    def get_ratio(self, otherHisto: "histo", suffix: str = "ratio",
+                  fillToLine: bool = False) -> "histo":
         """ Returns clone of the saved histogram and divides by otherHist.
         All the other properties are copied.
 
@@ -99,4 +108,26 @@ class histo:
             lineColor = self.fillColor
 
         return histo(self.title+"_"+suffix, th, lineColor=lineColor,
-                     fillColor=fillColor, option=self.option)
+                     fillColor=fillColor, drawOption=self.drawOption)
+
+    def style_histo(self, style: Dict[str, Any]) -> None:
+        """ Applies style to the histo
+        
+        Arguments:
+            style (``Dict[str, Any]``): style config
+        """
+
+        log.debug("Updating histo style")
+
+        for opt, set in style.items():
+            if "markerSize" in opt:
+                self.th.SetMarkerSize(set)
+            elif "fillStyle" in opt:
+                self.th.SetFillStyle(set)
+            elif "lineStyle" in opt:
+                self.th.SetLineStyle(set)
+            elif "drawOption" in opt:
+                self.drawOption = set
+            else:
+                log.error(f"Unknown option {opt}")
+                raise RuntimeError

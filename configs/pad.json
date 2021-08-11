@@ -1,0 +1,23 @@
+{
+    "margins":
+    {
+        "margin_up": 0.04,
+        "margin_down": 0.25,
+        "margin_left": 0.018,
+        "margin_right": 0.05
+    },
+    "basis":
+    {
+        "x_titleOffset": 2.2,
+        "x_titleSize": 30,
+        "x_titleFont": 43,
+        "x_labelSize": 30,
+        "x_labelFont": 43,
+        "y_titleOffset": 2.2,
+        "y_titleSize": 30,
+        "y_titleFont": 43,
+        "y_labelSize": 30,
+        "y_labelFont": 43,
+        "n_div": [505, "Y"] 
+    }
+}

@@ -8,18 +8,15 @@ ROOT.gROOT.SetBatch(True)
 
 def SetAtlasStyle():
   atlasStyle = 0
-  log.info("Applying ATLAS 2 style settings...")
+  log.info("Applying ATL2 style settings...")
   if atlasStyle==0:
     atlasStyle = AtlasStyle()
-  ROOT.gROOT.SetStyle("ATLAS2")
+  ROOT.gROOT.SetStyle("ATL2")
   ROOT.gROOT.ForceStyle()
-
-
-  ROOT.gStyle.SetErrorX(0.5)
 #  return atlasStyle
 
 def AtlasStyle():
-  atlasStyle = TStyle("ATLAS2","Atlas style")
+  atlasStyle = TStyle("ATL2","Atlas style")
 
   # use plain black on white colors
   icol=0 # WHITE
@@ -74,7 +71,6 @@ def AtlasStyle():
 
   # get rid of X error bars (as recommended in ATLAS figure guidelines)
   # atlasStyle.SetErrorX(0.0001)
-  atlasStyle.SetErrorX(0.5)
   # get rid of error bar caps
   atlasStyle.SetEndErrorSize(0.)
 

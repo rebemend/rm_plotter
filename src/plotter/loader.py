@@ -12,7 +12,7 @@ TODO: Saving? Overwrite?
 
 
 def load_config(path):
-    log.info(f"Loading config file {path}")
+    log.debug(f"Loading config file {path}")
     with open(path, "r") as f:
         config = json.load(f)
         return config
