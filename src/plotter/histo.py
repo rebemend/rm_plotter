@@ -96,4 +96,4 @@ class histo:
         lineColor = self.fillColor if fillToLine else self.lineColor
 
         return histo(self.title+"_"+suffix, th, lineColor=lineColor,
-                     fillColor=None, option=self.option)
+                     fillColor=fillColor, option=self.option)

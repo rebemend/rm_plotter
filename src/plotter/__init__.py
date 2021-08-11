@@ -5,6 +5,8 @@ from .collection import normalizationHelper  # NOQA
 from .histo import histo  # NOQA
 from .pad import pad  # NOQA
 from .pad import canvas  # NOQA
-from .legend import legend # NOQA
+from .legend import legend  # NOQA
+from . import loader  # NOQA
+from . import styler # NOQA
 from . import atlas  # NOQA
 from . import thHelper  # NOQA

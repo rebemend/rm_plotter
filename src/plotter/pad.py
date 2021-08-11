@@ -1,4 +1,6 @@
-from .histo import histo
+from plotter import histo
+from plotter import loader
+from plotter import styler
 import ROOT
 from ROOT import TPad, TCanvas
 from typing import List, Dict, Optional
@@ -47,7 +49,7 @@ class pad:
     """ Wrapper around TPad
     """
     def __init__(self, name: str, xl: int = 0, xh: int = 1,
-                 yl: int = 0, yh: int = 1) -> None:
+                 yl: int = 0, yh: int = 1, configPath = "configs/pad.json") -> None:
         """
         Arguments:
             name (``str``): name of the pad
@@ -55,12 +57,18 @@ class pad:
             xh (``int``): fraction of x-axis of the canvas the pad ends at
             yl (``int``): fraction of y-axis of the canvas the pad starts at
             yh (``int``): fraction of y-axis of the canvas the pad ends at
+            config (``str``): path to config of pad
         """
         self.tpad = TPad(name, name, xl, yl, xh, yh)
         self.name = name
 
+        self.config = loader.load_config(configPath)
         # set default margins
         self.margins()
+
+        # if margins in config, update:
+        if "margins" in self.config:
+            styler.pad_margin(self, self.config["margins"])
 
         self.histos: List[histo] = []
         self.xTitle = ""
@@ -147,12 +155,10 @@ class pad:
             # not sure that IndexError is the best one
             raise IndexError
 
+        self.tpad.cd()
         # now lets clone the first histogram to manipulate axis and such
         # this is done because we do not want to modify any externally provided
         # histograms
-        self.tpad.cd()
-
-        # create basis, this is the first time we really need it
         # TODO: add histo.clone??
         self.basis = histo("", self.histos[0].th.Clone("basis"),
                            lineColor=ROOT.kWhite, option="hist")
@@ -163,18 +169,21 @@ class pad:
         else:
             self._set_basis_yrange(margin=1)
 
+        # if margins in config, update:
+        if "basis" in self.config:
+            styler.pad_basis(self, self.config["basis"])
         # TODO: style config!!!
-        self.basis.th.GetXaxis().SetTitleOffset(2.2)
-        self.basis.th.GetYaxis().SetTitleOffset(2.2)
-        self.basis.th.GetXaxis().SetTitleSize(30)
-        self.basis.th.GetYaxis().SetTitleSize(30)
-        self.basis.th.GetXaxis().SetTitleFont(43)
-        self.basis.th.GetYaxis().SetTitleFont(43)
-        self.basis.th.GetXaxis().SetLabelSize(30)
-        self.basis.th.GetYaxis().SetLabelSize(30)
-        self.basis.th.GetXaxis().SetLabelFont(43)
-        self.basis.th.GetYaxis().SetLabelFont(43)
-        self.basis.th.SetNdivisions(505, "Y")
+        # self.basis.th.GetXaxis().SetTitleOffset(2.2)
+        # self.basis.th.GetYaxis().SetTitleOffset(2.2)
+        # self.basis.th.GetXaxis().SetTitleSize(30)
+        # self.basis.th.GetYaxis().SetTitleSize(30)
+        # self.basis.th.GetXaxis().SetTitleFont(43)
+        # self.basis.th.GetYaxis().SetTitleFont(43)
+        # self.basis.th.GetXaxis().SetLabelSize(30)
+        # self.basis.th.GetYaxis().SetLabelSize(30)
+        # self.basis.th.GetXaxis().SetLabelFont(43)
+        # self.basis.th.GetYaxis().SetLabelFont(43)
+        # self.basis.th.SetNdivisions(505, "Y")
 
         self.basis.draw()
 

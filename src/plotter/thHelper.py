@@ -27,7 +27,8 @@ def divide_ratio(numTH: TH1, denTH: TH1):
         log.error("Incompatible histograms!")
         raise ValueError
 
-    for iBin in range(numTH.GetNbinsX()):
+    for i in range(numTH.GetNbinsX()):
+        iBin = i+1
         otherVal = denTH.GetBinContent(iBin)
 
         # to divide the value has to be non-zero:
