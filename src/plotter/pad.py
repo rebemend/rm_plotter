@@ -172,18 +172,6 @@ class pad:
         # if margins in config, update:
         if "basis" in self.config:
             styler.pad_basis(self, self.config["basis"])
-        # TODO: style config!!!
-        # self.basis.th.GetXaxis().SetTitleOffset(2.2)
-        # self.basis.th.GetYaxis().SetTitleOffset(2.2)
-        # self.basis.th.GetXaxis().SetTitleSize(30)
-        # self.basis.th.GetYaxis().SetTitleSize(30)
-        # self.basis.th.GetXaxis().SetTitleFont(43)
-        # self.basis.th.GetYaxis().SetTitleFont(43)
-        # self.basis.th.GetXaxis().SetLabelSize(30)
-        # self.basis.th.GetYaxis().SetLabelSize(30)
-        # self.basis.th.GetXaxis().SetLabelFont(43)
-        # self.basis.th.GetYaxis().SetLabelFont(43)
-        # self.basis.th.SetNdivisions(505, "Y")
 
         self.basis.draw()
 
