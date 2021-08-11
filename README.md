@@ -1,6 +1,6 @@
 # falconry
 
-![Python package](https://github.com/fnechans/plotteert/workflows/Python%20package/badge.svg)
+[![Python package](https://github.com/fnechans/plotter/actions/workflows/python-package.yml/badge.svg)](https://github.com/fnechans/plotter/actions/workflows/python-package.yml)
 
 ## Table of contents
 
