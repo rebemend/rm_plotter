@@ -202,8 +202,12 @@ class pad:
         if self.basis is not None:
             self._set_basis_yrange()
 
-
     def style_pad_margin(self, style: Dict[str, Any]) -> None:
+        """ Applies style to the pad margins
+
+        Arguments:
+            style (``Dict[str, Any]``): style config
+        """
 
         log.debug("Updating margin style")
 
@@ -220,8 +224,12 @@ class pad:
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
 
-
     def style_pad_basis(self, style: Dict[str, Any]) -> None:
+        """ Applies style to the pad basis
+
+        Arguments:
+            style (``Dict[str, Any]``): style config
+        """
 
         if self.basis is None:
             log.error("Called pad style but no basis yet!")

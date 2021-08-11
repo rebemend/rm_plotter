@@ -112,7 +112,7 @@ class histo:
 
     def style_histo(self, style: Dict[str, Any]) -> None:
         """ Applies style to the histo
-        
+
         Arguments:
             style (``Dict[str, Any]``): style config
         """
