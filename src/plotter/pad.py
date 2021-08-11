@@ -28,7 +28,7 @@ class pad:
         self.name = name
 
         self.config: Dict[str, Any] = {}
-        if configPath is not "":
+        if configPath != "":
             self.config = loader.load_config(configPath)
         # set default margins
         self.margins()

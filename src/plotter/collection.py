@@ -99,6 +99,7 @@ class collection:
                     raise RuntimeError
                 continue
 
+            # TODO: maybe move norm to function? would make it more readable
             if norm.byXS:
                 dsTH.Scale(ds.XS)
             if norm.bySoW:
@@ -115,6 +116,7 @@ class collection:
         if collTH is None:
             return None
 
+        # TODO: maybe move norm to function? would make it more readable
         if norm.toOne:
             collTH.Scale(1./collTH.Integral())
         elif norm.byLumi:

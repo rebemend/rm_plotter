@@ -41,7 +41,7 @@ class histo:
             self.set_fillColor(fillColor)
 
         self.config: Dict[str, Any] = {}
-        if configPath is not "":
+        if configPath != "":
             self.config = loader.load_config(configPath)
             self.style_histo(self.config)
 
