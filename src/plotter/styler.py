@@ -1,51 +1,64 @@
 from typing import Dict, Any
-from plotter import pad, histo
+from .pad import pad
 
 import logging
 log = logging.getLogger(__name__)
 
+""" Class that applies style (in form of dicts
 
-def pad_margin(p : pad, style: Dict[str, Any]):
+Currently on for:
+
+pad
+    * margins
+    * basis
+"""
+
+
+def pad_margin(p: pad, style: Dict[str, Any]) -> None:
+
     log.info("Updating margin style")
-    if "margin_up" in style:
-        p.tpad.SetTopMargin(style["margin_up"])
-    if "margin_down" in style:
-        p.tpad.SetTopMargin(style["margin_down"])
-    if "margin_left" in style:
-        p.tpad.SetLeftMargin(style["margin_left"])
-    if "margin_right" in style:
-        p.tpad.SetRightMargin(style["margin_right"])
 
-def pad_basis(p : pad, style: Dict[str, Any]):
+    for opt, set in style.items():
+        if "margin_up" in opt:
+            p.tpad.SetTopMargin(set)
+        elif "margin_down" in opt:
+            p.tpad.SetTopMargin(set)
+        elif "margin_left" in opt:
+            p.tpad.SetLeftMargin(set)
+        elif "margin_right" in opt:
+            p.tpad.SetRightMargin(set)
+        else:
+            log.error(f"Unknown option {opt}")
+            raise RuntimeError
+
+
+def pad_basis(p: pad, style: Dict[str, Any]) -> None:
 
     if p.basis is None:
         log.error("Called pad style but no basis yet!")
         raise RuntimeError
     log.info("Updating basis style")
 
-    if "x_titleOffset" in style:
-        p.basis.th.GetXaxis().SetTitleOffset(style["x_titleOffset"])
-    if "x_titleSize" in style:
-        p.basis.th.GetXaxis().SetTitleSize(style["x_titleSize"])
-    if "x_titleFont" in style:
-        p.basis.th.GetXaxis().SetTitleFont(style["x_titleFont"])
-    if "x_labelSize" in style:
-        p.basis.th.GetXaxis().SetLabelSize(style["x_labelSize"])
-    if "x_labelFont" in style:
-        p.basis.th.GetXaxis().SetLabelFont(style["x_labelFont"])
+    for opt, set in style.items():
+        if "x_" in opt:
+            axis = p.basis.th.GetXaxis()
+        else:
+            axis = p.basis.th.GetYaxis()
 
-    if "y_titleOffset" in style:
-        p.basis.th.GetYaxis().SetTitleOffset(style["y_titleOffset"])
-    if "y_titleSize" in style:
-        p.basis.th.GetYaxis().SetTitleSize(style["y_titleSize"])
-    if "y_titleFont" in style:
-        p.basis.th.GetYaxis().SetTitleFont(style["y_titleFont"])
-    if "y_labelSize" in style:
-        p.basis.th.GetYaxis().SetLabelSize(style["y_labelSize"])
-    if "y_labelFont" in style:
-        p.basis.th.GetYaxis().SetLabelFont(style["y_labelFont"])
-
-    if "n_div" in style:
-        if len(style["n_div"]) != 2:
-            log.error("n_div option in wrong format, need two items")
-        p.basis.th.SetNdivisions(style["n_div"][0], style["n_div"][1])
+        if "titleOffset" in style:
+            axis.SetTitleOffset(set)
+        elif "titleSize" in style:
+            axis.SetTitleSize(set)
+        elif "titleFont" in style:
+            axis.SetTitleFont(set)
+        elif "labelSize" in style:
+            axis.SetLabelSize(set)
+        elif "labelFont" in style:
+            axis.SetLabelFont(set)
+        elif opt is "n_div":
+            if len(set) != 2:
+                log.error("n_div option in wrong format, need two items")
+            p.basis.th.SetNdivisions(set[0], set[1])
+        else:
+            log.error(f"Unknown option {opt}")
+            raise RuntimeError

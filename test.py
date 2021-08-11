@@ -30,13 +30,11 @@ p.logx()
 p.logy()
 p.margins(down=0)
 p.plot_histos()
-#p.tpad.BuildLegend()
-
 
 hR = hD.get_ratio(hD)
 hR.set_fillColor(ROOT.kGray+1)
 hR.set_lineColor(ROOT.kGray+1)
-hR.th.SetFillStyle(3154)         
+hR.th.SetFillStyle(3154)
 hR.th.SetLineStyle(3)
 hR.th.SetMarkerSize(0)
 hR.option = "e2"
@@ -63,10 +61,10 @@ pR2.margins(up=0)
 pR2.plot_histos()
 
 c.tcan.cd()
-atlas.ATLASLabel( 0.22, 0.92, "Internal" )
+atlas.ATLASLabel(0.22, 0.92, "Internal")
 
-l = legend()
-l.add_histos([hD, hB])
-l.create_and_draw()
+leg = legend()
+leg.add_histos([hD, hB])
+leg.create_and_draw()
 
 c.save("test/ptll.png")

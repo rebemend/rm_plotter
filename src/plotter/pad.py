@@ -1,6 +1,6 @@
-from plotter import histo
-from plotter import loader
-from plotter import styler
+from .histo import histo
+from . import loader
+from . import styler
 import ROOT
 from ROOT import TPad, TCanvas
 from typing import List, Dict, Optional
@@ -49,7 +49,8 @@ class pad:
     """ Wrapper around TPad
     """
     def __init__(self, name: str, xl: int = 0, xh: int = 1,
-                 yl: int = 0, yh: int = 1, configPath = "configs/pad.json") -> None:
+                 yl: int = 0, yh: int = 1,
+                 configPath: str = "configs/pad.json") -> None:
         """
         Arguments:
             name (``str``): name of the pad
@@ -208,7 +209,7 @@ class pad:
 
         # for the maximum you alway want to have some margin
         # TODO: margin as class variable?
-        
+
         if not self.isLogY:
             self.basis.th.GetYaxis().SetRangeUser(self.yMin, self.yMax*margin)
         # for log it is little bit more complicated

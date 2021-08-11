@@ -1,31 +1,44 @@
-from ROOT import TLegend, TH1
-from typing import List, Generic
-from plotter import histo
+from ROOT import TLegend
+from typing import List
+from .histo import histo
 
 import logging
 log = logging.getLogger(__name__)
+
 
 class legend:
     """ Wrapper around TLegend"""
     def __init__(self, xMin: float = 0.58, xMax: float = 0.96,
                  height: float = 0.04, yMax: float = 0.96, nColumns: int = 1) -> None:
-
+        """
+        Arguments:
+            xMin (``float``): lower x position of the legend
+            xMax (``float``): upper x position of the legend
+            yMin (``float``): lower y position of the legend
+            yMax (``float``): upper y position of the legend
+        """
 
         self.xMin = xMin
         self.xMax = xMax
         self.yMax = yMax
         self.height = height
         self.nCol = nColumns
-    
+
         self.histos: List[histo] = []
 
     def add_histo(self, h: histo):
+        """ Add histo to the legend """
         self.histos.append(h)
 
     def add_histos(self, hs: List[histo]):
+        """ Add list of histo to the legend """
         self.histos.extend(hs)
 
     def create_and_draw(self):
+        """ Creates the legend from added histograms and draws
+
+        Automatizes style (p/f/l)
+        """
         self.yMin = self.yMax - self.height*len(self.histos)/self.nCol
         self.tlegend = TLegend(self.xMin, self.yMin, self.xMax, self.yMax)
 

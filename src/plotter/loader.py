@@ -9,6 +9,8 @@ Currently only loading.
 
 TODO: Saving? Overwrite?
 """
+
+
 def load_config(path):
     log.info(f"Loading config file {path}")
     with open(path, "r") as f:

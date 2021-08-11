@@ -36,7 +36,7 @@ class histo:
         self.set_lineColor(lineColor)
         if fillColor is not None:
             self.set_fillColor(fillColor)
-    
+
     def set_fillColor(self, fillColor: int):
         """ Sets fill color """
         self.fillColor = fillColor
@@ -90,10 +90,13 @@ class histo:
         thHelper.divide_ratio(th, otherHisto.th)
 
         # switch colors if requested
-        fillColor = None if fillToLine else self.fillColor 
+        fillColor = None if fillToLine else self.fillColor
         if fillColor is None:
             th.SetFillColor(ROOT.kWhite)
-        lineColor = self.fillColor if fillToLine else self.lineColor
+        # to satisfy mypy first assign lineColor
+        lineColor = self.lineColor
+        if fillToLine and self.fillColor is not None:
+            lineColor = self.fillColor
 
         return histo(self.title+"_"+suffix, th, lineColor=lineColor,
                      fillColor=fillColor, option=self.option)
