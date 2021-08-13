@@ -33,11 +33,6 @@ class normalizationHelper:
         self.byXS = normByXS
         self.bySoW = normBySoW
 
-        if normToOne and normByLumi:
-            log.warning("Both norm. to one and norm. by lumi are active.")
-            log.warning("Norm to one takes precedence, so lumi does not have effect!")
-
-
 class collection:
     """ Manages collection of datasets
     and correct normalization of individual
@@ -45,18 +40,16 @@ class collection:
 
     # TODO: need to rethink how sumOfWeightHelper is handled
     # both within collection and dataset
-    def __init__(self, title: str, lumi: float,
+    def __init__(self, title: str,
                  sow: Optional[sumOfWeightHelper] = None) -> None:
         """
         Arguments:
             title (``str``): title of the sample,
                 used e.g. in plotting
-            lumi (``float``): used to normalize the whole collection
             sow (``sumOfWeightHelper```): defines where the sumOfWeight factor
                 can be found, see the sumOfWeightHelper class in dataset.py
         """
         self.title = title
-        self.lumi = lumi
         self.sow = sow
 
         # list of samples in the collection
@@ -106,7 +99,9 @@ class collection:
                 if self.sow is None:
                     log.error("Trying to normalize by sum of weights,\n but none was provided!.")
                     raise RuntimeError
-                dsTH.Scale(ds.get_sumOfWeights(self.sow))
+                dsTH.Scale(1./ds.get_sumOfWeights(self.sow))
+            if norm.byLumi:
+                dsTH.Scale(ds.lumi)
 
             if collTH:
                 collTH.Add(dsTH)
@@ -116,10 +111,7 @@ class collection:
         if collTH is None:
             return None
 
-        # TODO: maybe move norm to function? would make it more readable
         if norm.toOne:
             collTH.Scale(1./collTH.Integral())
-        elif norm.byLumi:
-            collTH.Scale(self.lumi)
 
         return collTH

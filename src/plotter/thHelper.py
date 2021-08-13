@@ -10,7 +10,7 @@ divide_ratio: divide function where error of the denominator
 """
 
 
-def divide_ratio(numTH: TH1, denTH: TH1):
+def divide_ratio(numTH: TH1, denTH: TH1) -> None:
     """ For ratio, we do not to take into account
     errors of the denominator!
 

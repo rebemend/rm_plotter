@@ -11,11 +11,11 @@ log = logging.getLogger(__name__)
 
 atlas.SetAtlasStyle()
 
-cData = collection("Data", 1)
-cData.add_dataset(dataset("Data", "test/Nominal/data.root", 1))
+cData = collection("Data")
+cData.add_dataset(dataset("Data", "test/Nominal/data.root"))
 
-cBkg = collection("Bkg", 1)
-cBkg.add_dataset(dataset("Bkg", "test/Nominal/background.root", 1))
+cBkg = collection("Bkg")
+cBkg.add_dataset(dataset("Bkg", "test/Nominal/background.root"))
 
 hD = histo("Data", cData.get_th("ptll_data"), configPath="configs/data.json")
 hB = histo("Top+EW", cBkg.get_th("ptll_topew"), fillColor=ROOT.kRed,

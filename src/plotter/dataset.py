@@ -26,7 +26,7 @@ class sumOfWeightHelper:
 class dataset:
     """ Manages single ROOT TFile
     """
-    def __init__(self, title: str, path: str, XS: float) -> None:
+    def __init__(self, title: str, path: str, XS: float = 1, lumi: float = 1) -> None:
         """
         Arguments:
             title (``str``): title of the sample,
@@ -35,10 +35,12 @@ class dataset:
             XS (``float``): cross-section of the sample,
                 (use 1 for data) /sumOfWeights and luminosity
                 are treated independently
+            lumi (``float``): luminosity of the sample
         """
         self.name = title
         self.path = path
         self.XS = XS
+        self.lumi = lumi
 
         # dataset can be created even if it not used
         # (e.g. some central list of samples)

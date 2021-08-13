@@ -1,5 +1,6 @@
 from ROOT import TStyle, TROOT
 import ROOT
+from typing import Dict
 
 import logging
 log = logging.getLogger(__name__)
@@ -89,7 +90,7 @@ def AtlasStyle():
 
 #SetAtlasStyle()
 
-def ATLASLabel(x, y, text = "", color = ROOT.kBlack):
+def ATLASLabel(x=0.22, y=0.9, text = "", color = ROOT.kBlack):
   l = ROOT.TLatex()
   l.SetNDC()
   l.SetTextFont(72)
@@ -102,3 +103,10 @@ def ATLASLabel(x, y, text = "", color = ROOT.kBlack):
     p.SetTextFont(42)
     p.SetTextColor(color)
     p.DrawLatex(x+delx,y,text)
+
+def get_lumi() -> Dict[str, float]:
+  luminosity = {}
+  luminosity["mc16a"] = (32988.1+3219.56)
+  luminosity["mc16d"] = 44307.4
+  luminosity["mc16e"] = 58450.1
+  return luminosity

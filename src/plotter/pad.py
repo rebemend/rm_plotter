@@ -50,7 +50,14 @@ class pad:
 
         self.basis: Optional[histo] = None
 
-    def margins(self, up: float = 0.04, down: float = 0.25,
+    def reset_histos(self):
+        """ Removes all histograms but keeps all non-histo settings
+        """
+        self.histos: List[histo] = []
+        self.customYrange = False
+        self.basis = None
+
+    def margins(self, up: float = 0.08, down: float = 0.25,
                 left: float = 0.18, right: float = 0.05) -> None:
         """ Set margins of the pad with default values,
         which work for the atlas style.
@@ -108,13 +115,17 @@ class pad:
                 if self.yMin > h.th.GetMinimum(0):
                     self.yMin = h.th.GetMinimum(0)
                 if self.yMax < h.th.GetMaximum():
-                    self.yMin = h.th.GetMaximum()
+                    self.yMax = h.th.GetMaximum()
         self.histos.append(h)
 
-    def plot_histos(self) -> None:
+    def plot_histos(self, excludeEmpty: bool = False) -> None:
         """ Plots histograms, including creation of basis,
             which handles some properties of the plot,
-            ike the axis title or range
+            like the axis title or range
+
+        Arguments:
+            excludeEmpty (``bool``): modifies x-range to
+                exclude empty bins in the start and end
         """
 
         if len(self.histos) == 0:
