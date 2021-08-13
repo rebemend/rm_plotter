@@ -33,6 +33,7 @@ class normalizationHelper:
         self.byXS = normByXS
         self.bySoW = normBySoW
 
+
 class collection:
     """ Manages collection of datasets
     and correct normalization of individual

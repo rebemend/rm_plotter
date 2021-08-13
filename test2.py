@@ -30,14 +30,16 @@ def yyWW_samples():
 
     sow = sumOfWeightHelper("nominal/sumOfWeight_nominal", 2)
     xs = xsReader()
-    xs.add_files(["test/xsection/XS_dibtt_mc16.csv","test/xsection/XS_DY_mc16.csv","test/xsection/XS_filt_mc16.csv"])
+    xs.add_files(["test/xsection/XS_dibtt_mc16.csv",
+                  "test/xsection/XS_DY_mc16.csv",
+                  "test/xsection/XS_filt_mc16.csv"])
 
     for mc16x, lumi in atlas.get_lumi().items():
         for flName in glob.glob("../ExclWW_Offline/test3/Output_v46a/yy2ww.*"+mc16x+"*.root"):
             if "data" in flName or "Rdo" in flName:
                 continue
             dsid = flName.split("/")[-1].split(".")[1]
-            if dsid+"."+mc16x in datasets.keys() and not "Unskim" in flName:
+            if dsid+"."+mc16x in datasets.keys() and "Unskim" not in flName:
                 log.warning(f"dsid/mc16x combination {dsid}/{mc16x} already exists, keeping old!")
                 log.debug(f"Old: {datasets[dsid+'.'+mc16x].path}")
                 log.debug(f"New: {flName}")
@@ -61,21 +63,22 @@ def yyWW_samples():
         collections["yymumu_SD_LPAIR"].add_datasets(["363698."+mc16x, "363699."+mc16x, "363700."+mc16x])
 
 
-def plot_hist(histoName, plotName, axisName, rebin = 1):
+def plot_hist(histoName, plotName, axisName, rebin=1):
 
     hD = histo("Data", collections["dataDraw"].get_th(histoName), configPath="configs/data.json")
     hD.th.Rebin(rebin)
 
     mcs = {
-        "DY_PP8_filt2": ROOT.kBlue, 
+        "DY_PP8_filt2": ROOT.kBlue,
         "ymumu_SD_LPAIR": ROOT.kRed,
         "yymumu_excl_HW7": ROOT.kOrange
     }
     hMCs: List[histo] = []
     for mc, col in mcs.items:
         norm = normalizationHelper(normByLumi=True, normBySoW=True, normByXS=True)
-        h = histo(collections[mc].title, collections[mc].get_th(histoName, norm=norm), fillColor=col,
-               configPath="configs/mc.json")
+        h = histo(collections[mc].title,
+                  collections[mc].get_th(histoName, norm=norm),
+                  fillColor=col, configPath="configs/mc.json")
         h.th.Rebin(rebin)
 
         for hOther in hMCs:
@@ -88,7 +91,7 @@ def plot_hist(histoName, plotName, axisName, rebin = 1):
     p.add_histos(hMCs)
     p.add_histo(hD)
     p.set_title(axisName, "Events")
-    #p.logx()
+    # p.logx()
     p.logy()
     p.margins(down=0)
     p.plot_histos()
@@ -104,8 +107,8 @@ def plot_hist(histoName, plotName, axisName, rebin = 1):
     pR2 = pad("ratio", yh=0.4)
     c.add_pad(pR2)
     pR2.set_yrange(0.501, 1.099)
-    pR2.add_histos([hR,hR2])
-    #pR2.logx()
+    pR2.add_histos([hR, hR2])
+    # pR2.logx()
     pR2.set_title(axisName, "Data/MC")
     pR2.margins(up=0)
     pR2.plot_histos()
@@ -120,6 +123,7 @@ def plot_hist(histoName, plotName, axisName, rebin = 1):
 
     c.save("test/"+plotName+".png")
 
+
 def main():
     yyWW_samples()
     histoName = "nominal/mumuOS/EWW/MassZ_Ntrk10/"
@@ -129,6 +133,7 @@ def main():
     histoName = "nominal/mumuOS/EWW/Excl/"
     plot_hist(histoName+"ll/hDiLeptonPt", "yyww_ptll_excl", "p_{T}^{ll}", rebin=5)
     plot_hist(histoName+"ll/hDiLeptonLogAco", "yyww_aco_excl", "Acoplanarity")
+
 
 if __name__ == "__main__":
     main()

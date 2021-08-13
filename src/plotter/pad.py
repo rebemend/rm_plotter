@@ -118,14 +118,10 @@ class pad:
                     self.yMax = h.th.GetMaximum()
         self.histos.append(h)
 
-    def plot_histos(self, excludeEmpty: bool = False) -> None:
+    def plot_histos(self) -> None:
         """ Plots histograms, including creation of basis,
             which handles some properties of the plot,
             like the axis title or range
-
-        Arguments:
-            excludeEmpty (``bool``): modifies x-range to
-                exclude empty bins in the start and end
         """
 
         if len(self.histos) == 0:
