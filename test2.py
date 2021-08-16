@@ -60,7 +60,9 @@ def yyWW_samples():
     for mc16x in atlas.get_lumi().keys():
         collections["DY_PP8_filt2"].add_datasets(["600702."+mc16x, "600703."+mc16x, "600704."+mc16x])
         collections["yymumu_excl_HW7"].add_datasets(["363753."+mc16x, "363754."+mc16x, "363755."+mc16x, "363756."+mc16x])
-        collections["yymumu_SD_LPAIR"].add_datasets(["363698."+mc16x, "363699."+mc16x, "363700."+mc16x])
+        collections["yymumu_SD_LPAIR"].add_datasets(["363699."+mc16x, "363700."+mc16x])
+        #collections["yymumu_SD_LPAIR"].add_datasets(["363698."+mc16x, "363699."+mc16x, "363700."+mc16x])
+
 
 
 def plot_hist(histoName, plotName, axisName, rebin=1):
@@ -70,11 +72,11 @@ def plot_hist(histoName, plotName, axisName, rebin=1):
 
     mcs = {
         "DY_PP8_filt2": ROOT.kBlue,
-        "ymumu_SD_LPAIR": ROOT.kRed,
+        "yymumu_SD_LPAIR": ROOT.kRed,
         "yymumu_excl_HW7": ROOT.kOrange
     }
     hMCs: List[histo] = []
-    for mc, col in mcs.items:
+    for mc, col in mcs.items():
         norm = normalizationHelper(normByLumi=True, normBySoW=True, normByXS=True)
         h = histo(collections[mc].title,
                   collections[mc].get_th(histoName, norm=norm),
@@ -83,6 +85,7 @@ def plot_hist(histoName, plotName, axisName, rebin=1):
 
         for hOther in hMCs:
             hOther.th.Add(h.th)
+        hMCs.append(h)
 
     c = canvas(plotName)
 
