@@ -7,6 +7,7 @@ from .pad import pad  # NOQA
 from .canvas import canvas  # NOQA
 from .legend import legend  # NOQA
 from .xsReader import xsReader  # NOQA
+from . import presets  # NOQA
 from . import loader  # NOQA
 from . import atlas  # NOQA
 from . import thHelper  # NOQA

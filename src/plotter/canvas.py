@@ -2,6 +2,7 @@ from .pad import pad
 import ROOT
 from ROOT import TCanvas
 from typing import Dict
+import os
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,10 +39,33 @@ class canvas:
         p.tpad.Draw()
 
     def save(self, path: str):
-        """ Simply calls SaveAs from TCanvas
+        """ Calls SaveAs from TCanvas, creates dirs if necessary
 
         Arguments:
             path (``str``): path to target file
         """
+
+        # if path contains directories, check if they exist
+        # if not, create them
+        if "/" in path:
+            dirName = path[:path.rindex("/")]
+            if not os.path.exists(dirName):
+                log.info(f"Creating directory {dirName}")
+                os.makedirs(dirName)
+
         # TODO: maybe add automatic saving with multiple suffixes or something?
         self.tcan.SaveAs(path)
+
+    def add_text(self, text: str, x: float, y: float, color: int = ROOT.kBlack):
+        """ Adds text to the canvas at x,y position
+        Arguments:
+            text (``str``): text to be displayed
+            x (``int``): x coordinate on the canvas (fraction)
+            y (``int``): y coordinate on the canvas (fraction)
+            color (``int``): ROOT TColor of the text, black by default
+        """
+        self.tcan.cd()
+        ltx = ROOT.TLatex()
+        ltx.SetNDC()
+        ltx.SetTextColor(color)
+        ltx.DrawLatex(x, y, text)

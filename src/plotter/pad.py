@@ -12,8 +12,8 @@ class pad:
     """ Wrapper around TPad
     """
 
-    def __init__(self, name: str, xl: int = 0, xh: int = 1,
-                 yl: int = 0, yh: int = 1,
+    def __init__(self, name: str, xl: float = 0, xh: float = 1,
+                 yl: float = 0, yh: float = 1,
                  configPath: str = "configs/pad.json") -> None:
         """
         Arguments:
@@ -90,6 +90,12 @@ class pad:
         self.tpad.SetLogy(doLog)
         self.isLogY = doLog
 
+        if self.basis is not None:
+            if not self.customYrange:
+                self._set_basis_yrange(margin=1.5)
+            else:
+                self._set_basis_yrange(margin=1)
+
     def add_histos(self, histos: List[histo]) -> None:
         """ Adds list of histograms to the pad
 
@@ -139,7 +145,7 @@ class pad:
         self.basis.th.Reset()
         self._set_basis_axis_title()
         if not self.customYrange:
-            self._set_basis_yrange(margin=1.3)
+            self._set_basis_yrange(margin=1.5)
         else:
             self._set_basis_yrange(margin=1)
 
