@@ -3,6 +3,7 @@ from plotter import xsReader
 from plotter import sumOfWeightHelper, atlas
 from typing import Dict, List
 import glob
+import os
 
 import logging
 logging.basicConfig(
@@ -12,11 +13,16 @@ log = logging.getLogger(__name__)
 
 
 class yyWW_samples:
-    def __init__(self):
+    def __init__(self, dirName: str):
+
+        if not os.path.exists(dirName):
+            log.error("Invalid path provided:")
+            log.error(f"{dirName}")
+
         collections: Dict[str, collection] = {}
         datasets: Dict[str, dataset] = {}
 
-        for flName in glob.glob("../ExclWW_Offline/test3/Output_v46a/yy2ww.data*.root"):
+        for flName in glob.glob(dirName+"/yy2ww.data*.root"):
             dataName = flName.split("/")[-1].split(".")[1]
             if dataName in datasets.keys():
                 log.warning(f"Data {dataName} already exists, keeping old!")
@@ -32,7 +38,7 @@ class yyWW_samples:
                       "test/xsection/XS_filt_mc16.csv"])
 
         for mc16x, lumi in atlas.get_lumi().items():
-            for flName in glob.glob("../ExclWW_Offline/test3/Output_v46a/yy2ww.*"+mc16x+"*.root"):
+            for flName in glob.glob(dirName+"/yy2ww.*"+mc16x+"*.root"):
                 if "data" in flName or "Rdo" in flName:
                     continue
                 dsid = flName.split("/")[-1].split(".")[1]
@@ -45,6 +51,9 @@ class yyWW_samples:
 
         def add_datasets(self, names: List[str]):
             for name in names:
+                if name not in datasets:
+                    log.error(f"Trying to add dataset {name} to a collection,")
+                    log.error("but the dataset does not exist! Probably missing files.")
                 self.add_dataset(datasets[name])
         collection.add_datasets = add_datasets
 

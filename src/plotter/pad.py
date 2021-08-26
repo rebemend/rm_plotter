@@ -141,7 +141,8 @@ class pad:
         # histograms
         # TODO: add histo.clone??
         self.basis = histo("", self.histos[0].th.Clone("basis"),
-                           lineColor=ROOT.kWhite, drawOption="hist")
+                           lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
+                           drawOption="hist")
         self.basis.th.Reset()
         self._set_basis_axis_title()
         if not self.customYrange:
@@ -157,6 +158,8 @@ class pad:
 
         for h in self.histos:
             h.draw(suffix="same")
+
+        self.basis.draw(drawOption="sameaxis")
 
     def _set_basis_axis_title(self) -> None:
         """ Sets titles of the axis through the basis histogram"""

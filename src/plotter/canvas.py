@@ -54,7 +54,12 @@ class canvas:
                 os.makedirs(dirName)
 
         # TODO: maybe add automatic saving with multiple suffixes or something?
+        # printout not wanted, modify gErrorIgnoreLevel
+        # TODO: create decorator if used more often
+        oldIgnore = ROOT.gErrorIgnoreLevel
+        ROOT.gErrorIgnoreLevel = 3000
         self.tcan.SaveAs(path)
+        ROOT.gErrorIgnoreLevel = oldIgnore
 
     def add_text(self, text: str, x: float, y: float, color: int = ROOT.kBlack):
         """ Adds text to the canvas at x,y position

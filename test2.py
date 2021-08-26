@@ -12,10 +12,10 @@ log = logging.getLogger(__name__)
 
 atlas.SetAtlasStyle()
 
-yyWW = yyWW_samples()
+yyWW = yyWW_samples("../ExclWW_Offline/test3/Output_v46a/")
 
 
-def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1):
+def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extraTitles: str = []):
 
     log.info(f"Working on histogram {histoName}")
     hD: histo
@@ -46,7 +46,11 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1):
 
     dm.canvas.tcan.cd()
     atlas.ATLASLabel(0.22, 0.9, "Internal")
-    dm.canvas.add_text("test", 0.22, 0.84)
+    if extraTitles != []:
+        yPosition = 0.85
+        for title in extraTitles:
+            dm.canvas.add_text(title, 0.22, yPosition)
+            yPosition -= 0.05
 
     dm.save("test/"+plotName+".png")
     dm.mainPad.logy()
@@ -54,18 +58,25 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1):
 
 
 def main():
-    yyWW_samples()
     histoNameBase = "nominal/mumuOS/"
-    cuts = ["EWW/MassZ_Ntrk10/", "EWW/Excl/", "EWW/ZMassVetoExclComb/"]
-    for cut in cuts:
+    cuts = {
+        "EWW/MassZ_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10"],
+        "EWW/ZMassVetoExclComb/": ["#mu#mu, Z-veto", "n_{trk}^{H}=0"],
+    }
+    for cut, extraTitles in cuts.items():
         histoName = histoNameBase + cut
-        plot_hist(histoName+"ll/hDiLeptonPt", "Out/"+cut+"ptll", "p_{T}^{ll}", rebin=5)
-        plot_hist(histoName+"ll/hDiLeptonLogAco", "Out/"+cut+"aco", "Acoplanarity")
-        plot_hist(histoName+"NX/hNtrkPV", "Out/"+cut+"ntrkH", "n_{trk}^{high-pt}")
-        plot_hist(histoName+"Trk/hNtrkComb_Ntrk10", "Out/"+cut+"ntrkC", "n_{trk}^{comb}")
-        plot_hist(histoName+"ll/hDiLeptonMass", "Out/"+cut+"mll", "m_{ll}", rebin=10)
-        plot_hist(histoName+"Trk/hNtrkComb_WCW_Ntrk10", "Out/"+cut+"ntrkC_WCW", "n_{trk}^{comb}")
-        plot_hist(histoName+"Trk/hNtrkComb_WCWall_Ntrk10", "Out/"+cut+"ntrkC_WCWall", "n_{trk}^{comb}")
+        plot_hist(histoName+"ll/hDiLeptonPt", "Out/"+cut+"ptll", "p_{T}^{ll}", rebin=10, extraTitles=extraTitles)
+        plot_hist(histoName+"ll/hDiLeptonPt_Wcp", "Out/"+cut+"ptll_Wcp",
+                  "p_{T}^{ll}", rebin=10, extraTitles=extraTitles+["no ntrkH corr"])
+        plot_hist(histoName+"ll/hDiLeptonPt_WCW", "Out/"+cut+"ptll_WCW", "p_{T}^{ll}", rebin=10, extraTitles=extraTitles)
+        plot_hist(histoName+"ll/hDiLeptonPt_WCWall", "Out/"+cut+"ptll_WCWall", "p_{T}^{ll}", rebin=10, extraTitles=extraTitles)
+        plot_hist(histoName+"ll/hDiLeptonLogAco", "Out/"+cut+"aco", "Acoplanarity", extraTitles=extraTitles)
+        plot_hist(histoName+"NX/hNtrkPV", "Out/"+cut+"ntrkH", "n_{trk}^{high-pt}", extraTitles=extraTitles)
+        plot_hist(histoName+"Trk/hNtrkComb_Ntrk10", "Out/"+cut+"ntrkC", "n_{trk}^{comb}", extraTitles=extraTitles)
+        plot_hist(histoName+"ll/hDiLeptonMass", "Out/"+cut+"mll", "m_{ll}", rebin=20, extraTitles=extraTitles)
+        plot_hist(histoName+"Trk/hNtrkComb_WCW_Ntrk10", "Out/"+cut+"ntrkC_WCW", "n_{trk}^{comb}", extraTitles=extraTitles)
+        plot_hist(histoName+"Trk/hNtrkComb_WCWall_Ntrk10",
+                  "Out/"+cut+"ntrkC_WCWall", "n_{trk}^{comb}", extraTitles=extraTitles)
 
 
 if __name__ == "__main__":

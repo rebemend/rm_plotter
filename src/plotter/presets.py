@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 class dataMC:
     def __init__(self, plotName: str = "", xTitle: str = "",
                  yTitle: str = "Events", ratioTitle: str = "Data/MC",
-                 fraction: float = 0.4):
+                 fraction: float = 0.3):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", yl=fraction)
@@ -30,6 +30,7 @@ class dataMC:
         self.canvas.add_pad(self.ratioPad)
         self.ratioPad.set_yrange(0.701, 1.299)
         self.ratioPad.margins(up=0)
+        self.ratioPad.set_title(xTitle, ratioTitle)
 
     def add_and_plot(self, hData: histo, _hMCs: List[histo]):
 
