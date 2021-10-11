@@ -96,16 +96,7 @@ class collection:
                     raise RuntimeError
                 continue
 
-            # TODO: maybe move norm to function? would make it more readable
-            if norm.byXS:
-                dsTH.Scale(ds.XS)
-            if norm.bySoW:
-                if self.sow is None:
-                    log.error("Trying to normalize by sum of weights,\n but none was provided!.")
-                    raise RuntimeError
-                dsTH.Scale(1./ds.get_sumOfWeights(self.sow))
-            if norm.byLumi:
-                dsTH.Scale(ds.lumi)
+            self.normalize_dataset_histo(dsTH, ds, norm)
 
             if collTH:
                 collTH.Add(dsTH)
@@ -119,3 +110,15 @@ class collection:
             collTH.Scale(1./collTH.Integral())
 
         return collTH
+
+    def normalize_dataset_histo(self, hist: TH1, ds: dataset, norm: normalizationHelper):
+        """ Normalizes histogram from a dataset"""
+        if norm.byXS:
+            hist.Scale(ds.XS)
+        if norm.bySoW:
+            if self.sow is None:
+                log.error("Trying to normalize by sum of weights,\n but none was provided!.")
+                raise RuntimeError
+            hist.Scale(1./ds.get_sumOfWeights(self.sow))
+        if norm.byLumi:
+            hist.Scale(ds.lumi)

@@ -38,7 +38,7 @@ class yyWW_samples:
         xs.add_files(["test/xsection/XS_dibtt_mc16.csv",
                       "test/xsection/XS_DY_mc16.csv",
                       "test/xsection/XS_filt_mc16.csv"])
-        
+
         self.sow = sow
         self.xs = xs
 
@@ -53,7 +53,7 @@ class yyWW_samples:
                     log.debug(f"New: {flName}")
                     continue
                 datasets[dsid+"."+mc16x] = dataset(dsid+"."+mc16x, flName, XS=xs.get_xs(dsid, oneIfMissing=True), lumi=lumi)
-                    
+
         def add_datasets(self, names: List[str]):
             for name in names:
                 self.add_dataset(datasets[name])
@@ -75,7 +75,6 @@ class yyWW_samples:
         self.make_collection("yymumu_excl_HW7", "yy#mu#mu excl. HW7", ["363753", "363754", "363755", "363756"])
         self.make_collection("yymumu_SD_LPAIR", "yy#mu#mu SD LPAIR", ["363699", "363700"])
 
-
     def make_collection(self, name: str, title: str, dsids: List[str]):
         self.collections[name] = collection(title, self.sow)
         for mc16x in atlas.get_lumi().keys():
@@ -87,5 +86,3 @@ class yyWW_samples:
                     log.error("but the dataset does not exist! Probably missing files.")
                 self.collections[name].add_dataset(self.datasets[dsid])
                 self.collections[f"{name}.{mc16x}"].add_dataset(self.datasets[dsid])
-
-        

@@ -210,7 +210,7 @@ class pad:
         # for log it is little bit more complicated
         # but this usually ends up looking nice
         else:
-            if self.yMin==0 or self.yMax==0:
+            if self.yMin == 0 or self.yMax == 0:
                 log.warning("Histograms y max/min=0, probably empty")
             else:
                 fPlot = 1./margin  # plot takes 1/margin of the plot vertically

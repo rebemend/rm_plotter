@@ -70,10 +70,10 @@ class dataMC:
                 else:
                     minDone = True
                     prevCont = True
-            if not maxDone: xMax = hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+            if not maxDone:
+                xMax = hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
             self.mainPad.set_xrange(xMin, xMax)
             self.ratioPad.set_xrange(xMin, xMax)
-
 
         self.mainPad.add_histos(self.hMCs)
         self.mainPad.add_histo(hData)
@@ -130,7 +130,7 @@ class fraction:
                 self.hAll = copy.copy(h)
                 self.hAll.th = h.th.Clone("stack")
                 first = False
-            else:            
+            else:
                 self.hAll.th.Add(h.th)
 
         for h in hToFrac:
@@ -199,10 +199,10 @@ class Comparison:
                 else:
                     minDone = True
                     prevCont = True
-            if not maxDone: xMax = histos[0].th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+            if not maxDone:
+                xMax = histos[0].th.GetBinLowEdge(self.histos[0].th.GetNbinsX()+1)
             self.mainPad.set_xrange(xMin, xMax)
             self.ratioPad.set_xrange(xMin, xMax)
-
 
         self.mainPad.add_histos(self.histos)
         self.mainPad.plot_histos()
@@ -214,7 +214,7 @@ class Comparison:
         cfgErr = loader.load_config("configs/err.json")
         self.hErr.style_histo(cfgErr)
 
-        self.hRatios = [] 
+        self.hRatios = []
         first = True
         for h in self.histos:
             if first:
