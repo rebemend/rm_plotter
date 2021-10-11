@@ -30,11 +30,9 @@ class pad:
         self.config: Dict[str, Any] = {}
         if configPath != "":
             self.config = loader.load_config(configPath)
-        # set default margins
-        self.margins()
 
         # if margins in config, update:
-        if self.config is not {} and "margins" in self.config:
+        if self.config is not {} and "margins" in self.config.keys():
             self.style_pad_margin(self.config["margins"])
 
         self.histos: List[histo] = []
@@ -43,10 +41,13 @@ class pad:
 
         self.yMin = 0.
         self.yMax = 1.
+        self.xMin = 0.
+        self.xMax = 1.
         # the logarithm of the y-axis is saved, as it affects the y-range
         self.isLogY = False
         # if user specifies y-range, we do not want to derive it automatically
         self.customYrange = False
+        self.customXrange = False
 
         self.basis: Optional[histo] = None
 
@@ -57,8 +58,10 @@ class pad:
         self.customYrange = False
         self.basis = None
 
-    def margins(self, up: float = 0.08, down: float = 0.25,
-                left: float = 0.18, right: float = 0.05) -> None:
+    def margins(self, up: Optional[float] = None,
+                down: Optional[float] = None,
+                left: Optional[float] = None,
+                right: Optional[float] = None) -> None:
         """ Set margins of the pad with default values,
         which work for the atlas style.
 
@@ -68,10 +71,14 @@ class pad:
             left (``float``): left margin
             right (``float``): right margin
         """
-        self.tpad.SetTopMargin(up)
-        self.tpad.SetBottomMargin(down)
-        self.tpad.SetLeftMargin(left)
-        self.tpad.SetRightMargin(right)
+        if up is not None:
+            self.tpad.SetTopMargin(up)
+        if down is not None:
+            self.tpad.SetBottomMargin(down)
+        if left is not None:
+            self.tpad.SetLeftMargin(left)
+        if right is not None:
+            self.tpad.SetRightMargin(right)
 
     def logx(self, doLog: bool = True) -> None:
         """ Sets the X-axis to log/lin
@@ -112,6 +119,11 @@ class pad:
             h (``histo``): added histogram
         """
 
+        if not self.customXrange:
+            if self.histos == []:
+                self.xMin = h.th.GetBinLowEdge(1)
+                self.xMax = h.th.GetBinLowEdge(h.th.GetNbinsX()+1)
+
         # if custom range defined, skip the automatic derivation
         if not self.customYrange:
             if self.histos == []:
@@ -149,8 +161,9 @@ class pad:
             self._set_basis_yrange(margin=1.5)
         else:
             self._set_basis_yrange(margin=1)
+        self._set_basis_xrange()
 
-        # if margins in config, update:
+        # if basis in config, update:
         if self.config is not {} and "basis" in self.config:
             self.style_pad_basis(self.config["basis"])
 
@@ -197,12 +210,15 @@ class pad:
         # for log it is little bit more complicated
         # but this usually ends up looking nice
         else:
-            fPlot = 1./margin  # plot takes 1/margin of the plot vertically
-            fBot = 0.02  # little bit space on the bottom
-            fLeg = 1-fPlot-0.02  # legend takes most of therest
-            yMinLog = pow(self.yMin, (fPlot+fBot)/fPlot)/pow(self.yMax, fBot/fPlot)
-            yMaxLog = pow(self.yMax, (1.-fBot)/fPlot)/pow(self.yMin, fLeg/fPlot)
-            self.basis.th.GetYaxis().SetRangeUser(yMinLog, yMaxLog)
+            if self.yMin==0 or self.yMax==0:
+                log.warning("Histograms y max/min=0, probably empty")
+            else:
+                fPlot = 1./margin  # plot takes 1/margin of the plot vertically
+                fBot = 0.02  # little bit space on the bottom
+                fLeg = 1-fPlot-0.02  # legend takes most of therest
+                yMinLog = pow(self.yMin, (fPlot+fBot)/fPlot)/pow(self.yMax, fBot/fPlot)
+                yMaxLog = pow(self.yMax, (1.-fBot)/fPlot)/pow(self.yMin, fLeg/fPlot)
+                self.basis.th.GetYaxis().SetRangeUser(yMinLog, yMaxLog)
 
     def set_yrange(self, yMin: float = 0, yMax: float = 1) -> None:
         """ Saves the y-axis range, applies to the basis if already exists
@@ -218,6 +234,28 @@ class pad:
         if self.basis is not None:
             self._set_basis_yrange()
 
+    def _set_basis_xrange(self) -> None:
+        """ Sets rangeof the x-axis through the basis histogram"""
+        if self.basis is None:
+            log.error("Called basis function but no basis yet!")
+            raise RuntimeError
+
+        self.basis.th.GetXaxis().SetRangeUser(self.xMin, self.xMax)
+
+    def set_xrange(self, xMin: float = 0, xMax: float = 1) -> None:
+        """ Saves the x-axis range, applies to the basis if already exists
+
+        Arguments:
+            xMin (``float``): lower range of the x-axis
+            xMax (``float``): upper range of the x-axis
+        """
+        self.xMin = xMin
+        self.xMax = xMax
+        self.customXrange = True
+
+        if self.basis is not None:
+            self._set_basis_xrange()
+
     def style_pad_margin(self, style: Dict[str, Any]) -> None:
         """ Applies style to the pad margins
 
@@ -231,7 +269,7 @@ class pad:
             if "margin_up" in opt:
                 self.tpad.SetTopMargin(set)
             elif "margin_down" in opt:
-                self.tpad.SetTopMargin(set)
+                self.tpad.SetBottomMargin(set)
             elif "margin_left" in opt:
                 self.tpad.SetLeftMargin(set)
             elif "margin_right" in opt:

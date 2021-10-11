@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
+
 from plotter import collection, dataset
-from plotter import histo, pad, canvas, atlas, legend
-from plotter import loader
+from plotter import histo, atlas, presets
 import ROOT
 
 import logging
@@ -12,57 +13,91 @@ log = logging.getLogger(__name__)
 atlas.SetAtlasStyle()
 
 cData = collection("Data")
-cData.add_dataset(dataset("Data", "test/Nominal/data.root"))
+cData.add_dataset(dataset("Data", "test/Nominal2/data.root"))
 
 cBkg = collection("Bkg")
-cBkg.add_dataset(dataset("Bkg", "test/Nominal/background.root"))
+cBkg.add_dataset(dataset("Bkg", "test/Nominal2/background.root"))
 
-hD = histo("Data", cData.get_th("ptll_data"), configPath="configs/data.json")
-hB = histo("Top+EW", cBkg.get_th("ptll_topew"), fillColor=ROOT.kRed,
+cHis = collection("Hists")
+cHis.add_dataset(dataset("Hists", "test/Nominal2/hists.root"))
+
+def plot_dm(var: str = "ptll", varTitle: str = "p_{T}^{ll}", suffix: str = ""):
+
+    hD = histo("Data", cData.get_th(var+"_data"+suffix), configPath="configs/data.json")
+
+    hS = histo("Z", cHis.get_th(var+"_Z"+suffix), fillColor=ROOT.kBlue,
            configPath="configs/mc.json")
 
-c = canvas("canvas")
+    hNF = histo("nonFid", cHis.get_th(var+"_nonFid"+suffix), fillColor=ROOT.kRed,
+               configPath="configs/mc.json")
 
-p = pad("main", yl=0.5)
-c.add_pad(p)
-p.add_histos([hD, hB])
-p.set_title("p_{T}^{ll}", "Events")
-p.logx()
-p.logy()
-p.margins(down=0)
-p.plot_histos()
+    hB = histo("Top+EW", cBkg.get_th(var+"_topew"+suffix), fillColor=ROOT.kGreen,
+               configPath="configs/mc.json")
 
-hR = hD.get_ratio(hD)
-hR.set_fillColor(ROOT.kGray+1)
-hR.set_lineColor(ROOT.kGray+1)
-cfgErr = loader.load_config("configs/err.json")
-hR.style_histo(cfgErr)
+    dm = presets.dataMC("test"+suffix, xTitle=varTitle)
+    dm.ratioPad.set_yrange(0.701, 1.199)
+    dm.add_and_plot(hD, [hS, hNF, hB])
+   # dm.mainPad.basis.th.GetXaxis().SetRangeUser(0, 100)
+   # dm.ratioPad.basis.th.GetXaxis().SetRangeUser(0, 100)
 
-pR = pad("ratio", yl=0.3, yh=0.5)
-c.add_pad(pR)
-pR.set_yrange(0.701, 1.299)
-pR.add_histos([hR])
-pR.logx()
-pR.set_title("p_{T}^{ll}", "Ratio")
-pR.margins(up=0, down=0)
-pR.plot_histos()
+    dm.canvas.tcan.cd()
+    atlas.ATLASLabel(0.22, 0.9, "Internal")
+    extraTitles = []
+    if extraTitles != []:
+        yPosition = 0.85
+        for title in extraTitles:
+            dm.canvas.add_text(title, 0.22, yPosition)
+            yPosition -= 0.05
+    plotName = var+"_"+suffix
+    dm.save("AI/dm/"+plotName+".png")
+    dm.mainPad.logy()
+    dm.save("AI/dm/"+plotName+"_log.png")
 
-hR2 = hB.get_ratio(hD, fillToLine=True)
+def plot_frac(var: str = "ptll", varTitle: str = "p_{T}^{ll}", suffix: str = ""):
 
-pR2 = pad("ratio", yh=0.3)
-c.add_pad(pR2)
-pR2.set_yrange(0.001, 0.299)
-pR2.add_histos([hR2])
-pR2.logx()
-pR2.set_title("p_{T}^{ll}", "Fraction")
-pR2.margins(up=0)
-pR2.plot_histos()
+    hS = histo("Z", cHis.get_th(var+"_Z"+suffix), lineColor=ROOT.kBlue,
+           configPath="configs/mc.json")
 
-c.tcan.cd()
-atlas.ATLASLabel(0.22, 0.92, "Internal")
+    hNF = histo("nonFid", cHis.get_th(var+"_nonFid"+suffix), lineColor=ROOT.kRed,
+               configPath="configs/mc.json")
 
-leg = legend()
-leg.add_histos([hD, hB])
-leg.create_and_draw()
+    hB = histo("Top+EW", cBkg.get_th(var+"_topew"+suffix), lineColor=ROOT.kGreen,
+               configPath="configs/mc.json")
 
-c.save("test/ptll.png")
+    frac = presets.fraction("frac"+suffix, xTitle=varTitle)
+    frac.add_and_plot([hS, hNF, hB], [hNF, hB])
+   # frac.mainPad.basis.th.GetXaxis().SetRangeUser(0, 100)
+
+    frac.canvas.tcan.cd()
+    atlas.ATLASLabel(0.22, 0.9, "Internal")
+    extraTitles = []
+    if extraTitles != []:
+        yPosition = 0.85
+        for title in extraTitles:
+            frac.canvas.add_text(title, 0.22, yPosition)
+            yPosition -= 0.05
+    plotName = var+"_"+suffix
+    frac.save("AI/frac/"+plotName+".png")
+    frac.mainPad.logy()
+    frac.save("AI/frac/"+plotName+"_log.png")
+
+plot_dm()
+plot_frac()
+nPt = 25
+nY = 8
+
+for y in range(nY):
+    suf = f"_M0_Y{y}"
+    log.info(f"Working on {suf}")
+    plot_dm(suffix=suf)
+    plot_frac(suffix=suf)
+    # for pt in range(nPt):
+        # suf = f"_PT{pt}_M0_Y{y}"
+        # log.info(f"Working on {suf}")
+        # plot(suffix=suf)
+
+for pt in range(nPt):
+    suf = f"_PT{pt}_M0"
+    log.info(f"Working on {suf}")
+    plot_dm("yll", "y_{ll}", suffix=suf)
+    plot_frac("yll", "y_{ll}", suffix=suf)

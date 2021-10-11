@@ -84,6 +84,9 @@ class collection:
         if norm is None:
             norm = normalizationHelper()
 
+        if len(self.datasets) == 0:
+            raise RuntimeError(f"Collection {self.title} is empty!\n Add datasets!")
+
         collTH: Optional[TH1] = None
         for ds in self.datasets:
             dsTH = ds.get_th(histoName, skipBad)
