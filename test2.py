@@ -20,7 +20,6 @@ sufD = ""
 sufMC = ""
 
 
-
 def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extraTitles: str = []):
 
     log.info(f"Working on histogram {histoName}")
