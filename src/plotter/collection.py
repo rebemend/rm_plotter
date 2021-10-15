@@ -108,6 +108,8 @@ class collection:
         return collTH
 
     def norm_ds(self, th: TH1, ds: dataset, norm: normalizationHelper):
+        """ Normalizes histogram from a dataset
+        """
         if norm.byXS:
             th.Scale(ds.XS)
         if norm.bySoW:

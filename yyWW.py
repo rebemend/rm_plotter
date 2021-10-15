@@ -86,7 +86,10 @@ class yyWW_samples:
         self.make_collection("DY_PP8_filt2", "DY PP8 (filt)", ["600702", "600703", "600704"])
         self.make_collection("yymumu_excl_HW7", "yy#mu#mu excl. HW7", ["363753", "363754", "363755", "363756"])
         self.make_collection("yymumu_SD_LPAIR", "yy#mu#mu SD LPAIR", ["363699", "363700"])
+<<<<<<< HEAD
         self.make_collection("DY_PP8_old", "DY PP8 old", ["361107", "361666", "361667"])
+=======
+>>>>>>> 034cf136ed34164520cad5c34681af06c8d3017d
 
     def make_collection(self, name: str, title: str, dsids: List[str]):
         self.collections[name] = collection(title, self.sow)
