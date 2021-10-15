@@ -1,5 +1,6 @@
 import json
-import os, sys
+import os
+import sys
 
 import logging
 log = logging.getLogger(__name__)

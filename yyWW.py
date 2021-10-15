@@ -39,7 +39,7 @@ class yyWW_samples:
         xs.add_files(["xsection/XS_dibtt_mc16.csv",
                       "xsection/XS_DY_mc16.csv",
                       "xsection/XS_filt_mc16.csv"])
-        
+
         self.sow = sow
         self.xs = xs
 
@@ -54,7 +54,7 @@ class yyWW_samples:
                     log.debug(f"New: {flName}")
                     continue
                 datasets[dsid+"."+mc16x] = dataset(dsid+"."+mc16x, flName, XS=xs.get_xs(dsid, oneIfMissing=True), lumi=lumi)
-                    
+
         def add_datasets(self, names: List[str]):
             for name in names:
                 if name not in datasets.keys():
@@ -79,7 +79,7 @@ class yyWW_samples:
 
         collections["data1516"] = collection("Data1516")
         collections["data1516"].add_datasets(["data15", "data16"])
-        
+
         collections["data"] = collection("Data FULL")
         collections["data"].add_datasets(["data15", "data16", "data17", "data18"])
 
@@ -87,7 +87,6 @@ class yyWW_samples:
         self.make_collection("yymumu_excl_HW7", "yy#mu#mu excl. HW7", ["363753", "363754", "363755", "363756"])
         self.make_collection("yymumu_SD_LPAIR", "yy#mu#mu SD LPAIR", ["363699", "363700"])
         self.make_collection("DY_PP8_old", "DY PP8 old", ["361107", "361666", "361667"])
-
 
     def make_collection(self, name: str, title: str, dsids: List[str]):
         self.collections[name] = collection(title, self.sow)
@@ -102,5 +101,3 @@ class yyWW_samples:
                     continue
                 self.collections[name].add_dataset(self.datasets[dsid])
                 self.collections[f"{name}.{mc16x}"].add_dataset(self.datasets[dsid])
-
-        

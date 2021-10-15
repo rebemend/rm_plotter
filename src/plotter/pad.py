@@ -3,12 +3,9 @@ from .histo import histo
 import ROOT
 from ROOT import TPad
 from typing import List, Dict, Optional, Any
-import os, sys
 
 import logging
 log = logging.getLogger(__name__)
-
-pkgPath = os.path.dirname(sys.modules["plotter"].__file__)+"/"
 
 
 class pad:
@@ -16,7 +13,7 @@ class pad:
     """
 
     def __init__(self, name: str, xl: float = 0, xh: float = 1,
-                 yl: float = 0, yh: float = 1, isTH1 = True,
+                 yl: float = 0, yh: float = 1, isTH1: bool = True,
                  configPath: str = loader.pkgPath+"configs/pad.json") -> None:
         """
         Arguments:
@@ -37,7 +34,7 @@ class pad:
         # if margins in config, update:
         if self.config is not {} and "margins" in self.config.keys():
             self.style_pad_margin(self.config["margins"])
-        
+
         # for TH1 advanced axis functions are used
         self.isTH1 = isTH1
 
@@ -129,7 +126,6 @@ class pad:
         if not self.isTH1:
             self.histos.append(h)
             return
-
 
         if not self.customXrange:
             if self.histos == []:
@@ -225,7 +221,7 @@ class pad:
         # for log it is little bit more complicated
         # but this usually ends up looking nice
         else:
-            if self.yMin==0 or self.yMax==0:
+            if self.yMin == 0 or self.yMax == 0:
                 log.warning("Histograms y max/min=0, probably empty")
             else:
                 fPlot = 1./margin  # plot takes 1/margin of the plot vertically

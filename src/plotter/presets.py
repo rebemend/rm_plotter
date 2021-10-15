@@ -7,14 +7,14 @@ from .legend import legend
 import ROOT
 from typing import List
 import copy
-import os, sys
 
 import logging
 log = logging.getLogger(__name__)
 
+
 class simple:
     def __init__(self, plotName: str = "", xTitle: str = "",
-                 yTitle: str = "Events", isTH1 = True):
+                 yTitle: str = "Events", isTH1: bool = True):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", configPath=loader.pkgPath+"configs/pad.json", isTH1=isTH1)
@@ -40,6 +40,7 @@ class simple:
 
     def save(self, plotName: str):
         self.canvas.save(plotName)
+
 
 class dataMC:
     def __init__(self, plotName: str = "", xTitle: str = "",
@@ -99,10 +100,10 @@ class dataMC:
                 else:
                     minDone = True
                     prevCont = True
-            if not maxDone: xMax = hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+            if not maxDone:
+                xMax = hData.th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
             self.mainPad.set_xrange(xMin, xMax)
             self.ratioPad.set_xrange(xMin, xMax)
-
 
         self.mainPad.add_histos(self.hMCs)
         self.mainPad.add_histo(hData)
@@ -159,7 +160,7 @@ class fraction:
                 self.hAll = copy.copy(h)
                 self.hAll.th = h.th.Clone("stack")
                 first = False
-            else:            
+            else:
                 self.hAll.th.Add(h.th)
 
         for h in hToFrac:
@@ -228,10 +229,10 @@ class Comparison:
                 else:
                     minDone = True
                     prevCont = True
-            if not maxDone: xMax = histos[0].th.GetBinLowEdge(self.hData.th.GetNbinsX()+1)
+            if not maxDone:
+                xMax = histos[0].th.GetBinLowEdge(self.histos[0].th.GetNbinsX()+1)
             self.mainPad.set_xrange(xMin, xMax)
             self.ratioPad.set_xrange(xMin, xMax)
-
 
         self.mainPad.add_histos(self.histos)
         self.mainPad.plot_histos()
@@ -243,7 +244,7 @@ class Comparison:
         cfgErr = loader.load_config(loader.pkgPath+"configs/err.json")
         self.hErr.style_histo(cfgErr)
 
-        self.hRatios = [] 
+        self.hRatios = []
         first = True
         for h in self.histos:
             if first:

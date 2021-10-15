@@ -79,11 +79,6 @@ class collection:
             Combined histogram (``TH1``)
         """
 
-        # if the user does not specify normalization helper
-        # just use default (all flags false)
-        if norm is None:
-            norm = normalizationHelper()
-
         if len(self.datasets) == 0:
             raise RuntimeError(f"Collection {self.title} is empty!\n Add datasets!")
 
@@ -96,16 +91,8 @@ class collection:
                     raise RuntimeError
                 continue
 
-            # TODO: maybe move norm to function? would make it more readable
-            if norm.byXS:
-                dsTH.Scale(ds.XS)
-            if norm.bySoW:
-                if self.sow is None:
-                    log.error("Trying to normalize by sum of weights,\n but none was provided!.")
-                    raise RuntimeError
-                dsTH.Scale(1./ds.get_sumOfWeights(self.sow))
-            if norm.byLumi:
-                dsTH.Scale(ds.lumi)
+            if norm is not None:
+                self.norm_ds(dsTH, ds, norm)
 
             if collTH:
                 collTH.Add(dsTH)
@@ -115,7 +102,18 @@ class collection:
         if collTH is None:
             return None
 
-        if norm.toOne:
+        if norm is not None and norm.toOne:
             collTH.Scale(1./collTH.Integral())
 
         return collTH
+
+    def norm_ds(self, th: TH1, ds: dataset, norm: normalizationHelper):
+        if norm.byXS:
+            th.Scale(ds.XS)
+        if norm.bySoW:
+            if self.sow is None:
+                log.error("Trying to normalize by sum of weights,\n but none was provided!.")
+                raise RuntimeError
+            th.Scale(1./ds.get_sumOfWeights(self.sow))
+        if norm.byLumi:
+            th.Scale(ds.lumi)

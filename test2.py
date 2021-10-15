@@ -16,8 +16,9 @@ atlas.SetAtlasStyle()
 
 version = "v46h/"
 yyWW = yyWW_samples("../ExclWW_Offline/test3/Output_"+version)
-sufD = ""#"18"
-sufMC = ""#".mc16e"
+sufD = ""
+sufMC = ""
+
 
 def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extraTitles: str = []):
 
@@ -56,7 +57,7 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extr
     dm.ratioPad.set_yrange(0.501, 1.199)
     dm.add_and_plot(hD, hMCs)
     if "DiLeptonPt" in histoName:
-        dm.set_xrange(0,50)
+        dm.set_xrange(0, 50)
 
     dm.canvas.tcan.cd()
     atlas.ATLASLabel(0.22, 0.9, "Internal")
@@ -69,6 +70,7 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extr
     dm.save("test/"+version+sufD+"/"+plotName+".png")
     dm.mainPad.logy()
     dm.save("test/"+version+sufD+"/"+plotName+"_log.png")
+
 
 def DM():
     histoNameBase = "nominal/mumuOS/"
@@ -117,6 +119,7 @@ def DM():
         plot_hist(histoName+"Trk/hNtrkComb_WCWall_Ntrk10",
                   "Out/"+cut+"ntrkC_WCWall", "n_{trk}^{comb}", extraTitles=extraTitles)
 
+
 def main():
     global yyWW
     global version
@@ -134,6 +137,7 @@ def main():
     sufD = "18"
     sufMC = ".mc16e"
     DM()
+
 
 if __name__ == "__main__":
     main()
