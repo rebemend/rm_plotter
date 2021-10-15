@@ -7,10 +7,39 @@ from .legend import legend
 import ROOT
 from typing import List
 import copy
+import os, sys
 
 import logging
 log = logging.getLogger(__name__)
 
+class simple:
+    def __init__(self, plotName: str = "", xTitle: str = "",
+                 yTitle: str = "Events", isTH1 = True):
+        self.canvas = canvas(plotName)
+
+        self.mainPad = pad("main", configPath=loader.pkgPath+"configs/pad.json", isTH1=isTH1)
+        self.canvas.add_pad(self.mainPad)
+        self.mainPad.set_title(xTitle, yTitle)
+
+    def add_and_plot(self, hs: List[histo]):
+
+        if len(hs) == 0:
+            log.error("List of MC histograms is empty")
+            raise RuntimeError
+
+        self.hs = hs
+
+        self.mainPad.add_histos(self.hs)
+        self.mainPad.plot_histos()
+
+    def set_xrange(self, min, max):
+        self.mainPad.set_xrange(min, max)
+
+    def set_yrange(self, min, max):
+        self.mainPad.set_yrange(min, max)
+
+    def save(self, plotName: str):
+        self.canvas.save(plotName)
 
 class dataMC:
     def __init__(self, plotName: str = "", xTitle: str = "",
@@ -19,13 +48,13 @@ class dataMC:
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", yl=fraction,
-                           configPath="configs/pad_dm.json")
+                           configPath=loader.pkgPath+"configs/pad_dm.json")
         self.canvas.add_pad(self.mainPad)
         self.mainPad.set_title(xTitle, yTitle)
         self.mainPad.margins(down=0)
 
         self.ratioPad = pad("ratio", yh=fraction,
-                            configPath="configs/pad_dm.json")
+                            configPath=loader.pkgPath+"configs/pad_dm.json")
         self.canvas.add_pad(self.ratioPad)
         self.ratioPad.set_yrange(0.701, 1.299)
         self.ratioPad.margins(up=0)
@@ -83,7 +112,7 @@ class dataMC:
         self.hErr.set_fillColor(ROOT.kGray+1)
         self.hErr.set_lineColor(ROOT.kGray+1)
         # TODO: custom config
-        cfgErr = loader.load_config("configs/err.json")
+        cfgErr = loader.load_config(loader.pkgPath+"configs/err.json")
         self.hErr.style_histo(cfgErr)
 
         self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
@@ -158,13 +187,13 @@ class Comparison:
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", yl=fraction,
-                           configPath="configs/pad_dm.json")
+                           configPath=loader.pkgPath+"configs/pad_dm.json")
         self.canvas.add_pad(self.mainPad)
         self.mainPad.set_title(xTitle, yTitle)
         self.mainPad.margins(down=0)
 
         self.ratioPad = pad("ratio", yh=fraction,
-                            configPath="configs/pad_dm.json")
+                            configPath=loader.pkgPath+"configs/pad_dm.json")
         self.canvas.add_pad(self.ratioPad)
         self.ratioPad.set_yrange(0.701, 1.299)
         self.ratioPad.margins(up=0)
@@ -211,7 +240,7 @@ class Comparison:
         self.hErr.set_fillColor(ROOT.kGray+1)
         self.hErr.set_lineColor(ROOT.kGray+1)
         # TODO: custom config
-        cfgErr = loader.load_config("configs/err.json")
+        cfgErr = loader.load_config(loader.pkgPath+"configs/err.json")
         self.hErr.style_histo(cfgErr)
 
         self.hRatios = [] 
@@ -232,3 +261,7 @@ class Comparison:
 
     def save(self, plotName: str):
         self.canvas.save(plotName)
+
+    def set_xrange(self, min, max):
+        self.mainPad.set_xrange(min, max)
+        self.ratioPad.set_xrange(min, max)

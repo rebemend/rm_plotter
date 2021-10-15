@@ -14,10 +14,10 @@ log = logging.getLogger(__name__)
 
 atlas.SetAtlasStyle()
 
-version = "v46g/"
+version = "v46h/"
 yyWW = yyWW_samples("../ExclWW_Offline/test3/Output_"+version)
-sufD = "18"
-sufMC = ".mc16e"
+sufD = ""#"18"
+sufMC = ""#".mc16e"
 
 def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extraTitles: str = []):
 
@@ -76,7 +76,10 @@ def DM():
         "EWW/MassZ_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10"],
         "EWW/MassZ_Ptll0_5_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [0,5]"],
         "EWW/MassZ_Ptll5_10_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [5,10]"],
+        "EWW/MassZ_Ptll10_15_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [10,15]"],
+        "EWW/MassZ_Ptll15_20_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [15,20]"],
         "EWW/MassZ_Ptll10_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [10,]"],
+        "EWW/MassZ_Ptll20_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [20,]"],
         "EWW/ZMassVetoExclComb/": ["#mu#mu, Z-veto", "n_{trk}^{Comb}=0"],
         "EWW/MassZExclComb/": ["#mu#mu, Z-peak", "n_{trk}^{Comb}=0"],
         "EWW/MassZCR1_4Comb/": ["#mu#mu, Z-peak", "n_{trk}^{Comb}=1-4"],
@@ -117,13 +120,20 @@ def DM():
 def main():
     global yyWW
     global version
-    DM()
+    global sufD
+    global sufMC
     yyWW = yyWW_samples("../noNtrkH_ExclWW_Offline/test3/Output_"+version)
-    version = "v46g_opt1/"
+    version = "v46h_opt1/"
     DM()
-
-
-
+    sufD = "1516"
+    sufMC = ".mc16a"
+    DM()
+    sufD = "17"
+    sufMC = ".mc16d"
+    DM()
+    sufD = "18"
+    sufMC = ".mc16e"
+    DM()
 
 if __name__ == "__main__":
     main()

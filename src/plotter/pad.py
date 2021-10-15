@@ -3,9 +3,12 @@ from .histo import histo
 import ROOT
 from ROOT import TPad
 from typing import List, Dict, Optional, Any
+import os, sys
 
 import logging
 log = logging.getLogger(__name__)
+
+pkgPath = os.path.dirname(sys.modules["plotter"].__file__)+"/"
 
 
 class pad:
@@ -13,8 +16,8 @@ class pad:
     """
 
     def __init__(self, name: str, xl: float = 0, xh: float = 1,
-                 yl: float = 0, yh: float = 1,
-                 configPath: str = "configs/pad.json") -> None:
+                 yl: float = 0, yh: float = 1, isTH1 = True,
+                 configPath: str = loader.pkgPath+"configs/pad.json") -> None:
         """
         Arguments:
             name (``str``): name of the pad
@@ -34,6 +37,9 @@ class pad:
         # if margins in config, update:
         if self.config is not {} and "margins" in self.config.keys():
             self.style_pad_margin(self.config["margins"])
+        
+        # for TH1 advanced axis functions are used
+        self.isTH1 = isTH1
 
         self.histos: List[histo] = []
         self.xTitle = ""
@@ -55,6 +61,7 @@ class pad:
         """ Removes all histograms but keeps all non-histo settings
         """
         self.histos: List[histo] = []
+        self.customXrange = False
         self.customYrange = False
         self.basis = None
 
@@ -119,13 +126,18 @@ class pad:
             h (``histo``): added histogram
         """
 
+        if not self.isTH1:
+            self.histos.append(h)
+            return
+
+
         if not self.customXrange:
             if self.histos == []:
                 self.xMin = h.th.GetBinLowEdge(1)
                 self.xMax = h.th.GetBinLowEdge(h.th.GetNbinsX()+1)
 
         # if custom range defined, skip the automatic derivation
-        if not self.customYrange:
+        if not self.customYrange and self.isTH1:
             if self.histos == []:
                 self.yMin = h.th.GetMinimum(0)
                 self.yMax = h.th.GetMaximum()
@@ -134,6 +146,7 @@ class pad:
                     self.yMin = h.th.GetMinimum(0)
                 if self.yMax < h.th.GetMaximum():
                     self.yMax = h.th.GetMaximum()
+
         self.histos.append(h)
 
     def plot_histos(self) -> None:
@@ -157,11 +170,13 @@ class pad:
                            drawOption="hist")
         self.basis.th.Reset()
         self._set_basis_axis_title()
-        if not self.customYrange:
-            self._set_basis_yrange(margin=1.5)
-        else:
+
+        if self.customYrange:
             self._set_basis_yrange(margin=1)
-        self._set_basis_xrange()
+        elif self.isTH1:
+            self._set_basis_yrange(margin=1.5)
+        if self.customXrange or self.isTH1:
+            self._set_basis_xrange()
 
         # if basis in config, update:
         if self.config is not {} and "basis" in self.config:

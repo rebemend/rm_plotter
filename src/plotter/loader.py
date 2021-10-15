@@ -1,4 +1,5 @@
 import json
+import os, sys
 
 import logging
 log = logging.getLogger(__name__)
@@ -9,6 +10,8 @@ Currently only loading.
 
 TODO: Saving? Overwrite?
 """
+
+pkgPath = os.path.dirname(sys.modules["plotter"].__file__)+"/"
 
 
 def load_config(path):
