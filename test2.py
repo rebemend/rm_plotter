@@ -42,12 +42,27 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extr
             "DY_PP8_filt2"+sufMC: ROOT.kBlue,
         }
     hMCs: List[histo] = []
+    hIncl = None
+    hTruth = None
+    histoName2 = histoName.replace("hNtrkComb_WCW_Ntrk10","hNtrkComb_WCW_Ntrk200")
     for mc, col in mcs.items():
         norm = normalizationHelper(normByLumi=True, normBySoW=True, normByXS=True)
         h = histo(yyWW.collections[mc].title,
                   yyWW.collections[mc].get_th(histoName, norm=norm),
                   fillColor=col, configPath="configs/mc.json")
         h.th.Rebin(rebin)
+        if "hNtrkComb_WCW_Ntrk10" in histoName:
+            if hIncl is None:
+                hIncl = histo(yyWW.collections[mc].title + " incl.",
+                    yyWW.collections[mc].get_th(histoName2, norm=norm),
+                    lineColor=ROOT.kGreen+1, configPath="configs/mc.json")
+                if "yymumu" in mc:
+                    hIncl.th.Scale(0.8)
+            else:
+                th = yyWW.collections[mc].get_th(histoName2, norm=norm)
+                if "yymumu" in mc:
+                    th.Scale(0.8)
+                hIncl.th.Add(th)
         if "yymumu" in mc:
             h.th.Scale(0.8)
         hMCs.append(h)
@@ -55,7 +70,12 @@ def plot_hist(histoName: str, plotName: str, axisName: str, rebin: int = 1, extr
     dm = presets.dataMC(plotName, xTitle=axisName)
     # p.logx()
     dm.ratioPad.set_yrange(0.501, 1.199)
-    dm.add_and_plot(hD, hMCs)
+    if hIncl is not None:
+        hIncl.th.Rebin(rebin)
+        dm.add_and_plot(hD, hMCs, [hIncl])
+    else:
+        dm.add_and_plot(hD, hMCs)
+
     if "DiLeptonPt" in histoName:
         dm.set_xrange(0, 50)
 
@@ -82,6 +102,12 @@ def DM():
         "EWW/MassZ_Ptll15_20_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [15,20]"],
         "EWW/MassZ_Ptll10_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [10,]"],
         "EWW/MassZ_Ptll20_Ntrk10/":  ["#mu#mu, Z-peak", "n_{trk}^{H}<=10, p_{T}^{ll} [20,]"],
+        "EWW/MassZ_Ptll0_5/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [0,5]"],
+        "EWW/MassZ_Ptll5_10/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [5,10]"],
+        "EWW/MassZ_Ptll10_15/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [10,15]"],
+        "EWW/MassZ_Ptll15_20/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [15,20]"],
+        "EWW/MassZ_Ptll10/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [10,]"],
+        "EWW/MassZ_Ptll20/":  ["#mu#mu, Z-peak", "p_{T}^{ll} [20,]"],
         "EWW/ZMassVetoExclComb/": ["#mu#mu, Z-veto", "n_{trk}^{Comb}=0"],
         "EWW/MassZExclComb/": ["#mu#mu, Z-peak", "n_{trk}^{Comb}=0"],
         "EWW/MassZCR1_4Comb/": ["#mu#mu, Z-peak", "n_{trk}^{Comb}=1-4"],
@@ -114,10 +140,10 @@ def DM():
         plot_hist(histoName+"ll/hDiLeptonMass_WCWall", "Out/"+cut+"mll_WCWall",
                   "m_{ll}", rebin=rebin_mll, extraTitles=extraTitles+["comb. nch+pu weight"])
         plot_hist(histoName+"NX/hNtrkPV", "Out/"+cut+"ntrkH", "n_{trk}^{high-pt}", extraTitles=extraTitles)
-        plot_hist(histoName+"Trk/hNtrkComb_Ntrk10", "Out/"+cut+"ntrkC", "n_{trk}^{comb}", extraTitles=extraTitles)
-        plot_hist(histoName+"Trk/hNtrkComb_WCW_Ntrk10", "Out/"+cut+"ntrkC_WCW", "n_{trk}^{comb}", extraTitles=extraTitles)
+        plot_hist(histoName+"Trk/hNtrkComb_Ntrk10", "Out/"+cut+"ntrkC", "n_{trk}^{comb}", extraTitles=extraTitles+["Ntrk10"])
+        plot_hist(histoName+"Trk/hNtrkComb_WCW_Ntrk10", "Out/"+cut+"ntrkC_WCW", "n_{trk}^{comb}", extraTitles=extraTitles+["Ntrk10"])
         plot_hist(histoName+"Trk/hNtrkComb_WCWall_Ntrk10",
-                  "Out/"+cut+"ntrkC_WCWall", "n_{trk}^{comb}", extraTitles=extraTitles)
+                  "Out/"+cut+"ntrkC_WCWall", "n_{trk}^{comb}", extraTitles=extraTitles+["Ntrk10"])
 
 
 def main():
@@ -125,8 +151,9 @@ def main():
     global version
     global sufD
     global sufMC
+    version = "v46j"
     yyWW = yyWW_samples("../noNtrkH_ExclWW_Offline/test3/Output_"+version)
-    version = "v46h_opt1/"
+    version = "v46j_opt1/"
     DM()
     sufD = "1516"
     sufMC = ".mc16a"

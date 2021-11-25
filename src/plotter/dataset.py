@@ -4,7 +4,6 @@ from typing import Optional
 import logging
 log = logging.getLogger(__name__)
 
-
 class sumOfWeightHelper:
     """ Small helper class to get sum of weight
 
@@ -104,7 +103,7 @@ class dataset:
                 return None
         if self.goodFile:
             h = self.tFile.Get(histoName)
-            if h is None:
+            if not h: # is not None does not work for some reason
                 log.error(f"Histogram {histoName} does not exist!")
                 raise RuntimeError
             return h

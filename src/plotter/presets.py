@@ -63,7 +63,7 @@ class dataMC:
 
         self.nonEmpty = True
 
-    def add_and_plot(self, hData: histo, _hMCs: List[histo]):
+    def add_and_plot(self, hData: histo, _hMCs: List[histo], _hShapes: List[histo] = []):
 
         if len(_hMCs) == 0:
             log.error("List of MC histograms is empty")
@@ -106,6 +106,9 @@ class dataMC:
             self.ratioPad.set_xrange(xMin, xMax)
 
         self.mainPad.add_histos(self.hMCs)
+        self.hShapes = _hShapes
+        if self.hShapes!= []:
+            self.mainPad.add_histos(self.hShapes)
         self.mainPad.add_histo(hData)
         self.mainPad.plot_histos()
 
@@ -117,20 +120,24 @@ class dataMC:
         self.hErr.style_histo(cfgErr)
 
         self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
+        self.hRatioShapes = [h.get_ratio(self.hMCs[0]) for h in self.hShapes]
         self.ratioPad.add_histos([self.hErr, self.hRatio])
+        if self.hRatioShapes != []:
+            self.ratioPad.add_histos(self.hRatioShapes)
         self.ratioPad.plot_histos()
-
-        self.canvas.tcan.cd()
-        self.leg = legend()
-        self.leg.add_histo(self.hData)
-        self.leg.add_histos(self.hMCs)
-        self.leg.create_and_draw()
 
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
 
     def save(self, plotName: str):
+        self.canvas.tcan.cd()
+        self.leg = legend()
+        self.leg.add_histo(self.hData)
+        self.leg.add_histos(self.hMCs)
+        if self.hShapes != []:
+            self.leg.add_histos(self.hShapes)
+        self.leg.create_and_draw()
         self.canvas.save(plotName)
 
 
@@ -183,7 +190,7 @@ class fraction:
 
 class Comparison:
     def __init__(self, plotName: str = "", xTitle: str = "",
-                 yTitle: str = "Events", ratioTitle: str = "Ration",
+                 yTitle: str = "Events", ratioTitle: str = "Ratio",
                  fraction: float = 0.3):
         self.canvas = canvas(plotName)
 
