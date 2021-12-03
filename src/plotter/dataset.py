@@ -104,7 +104,7 @@ class dataset:
         if self.goodFile:
             h = self.tFile.Get(histoName)
             if not h: # is not None does not work for some reason
-                log.error(f"Histogram {histoName} does not exist!")
+                log.error(f"Histogram {histoName} does not exist in dataset {self.name}!")
                 raise RuntimeError
             return h
         return None
