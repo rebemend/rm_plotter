@@ -1,5 +1,5 @@
-from ROOT import TFile, TH1
-from typing import Optional
+from ROOT import TFile, TH1, TTree
+from typing import Optional, Union
 
 import logging
 log = logging.getLogger(__name__)
@@ -85,8 +85,8 @@ class dataset:
         else:
             return self.goodFile
 
-    def get_th(self, histoName: str, skipBad: bool = False) -> Optional[TH1]:
-        """ Returns TH1 corresponding to the path
+    def get(self, objectName: str, skipBad: bool = False) -> Optional[Union[TH1, TTree]]:
+        """ Returns Object (usually TH1) corresponding to the path
 
         Arguments:
             skipBad (``bool``): if True, does not
@@ -102,9 +102,9 @@ class dataset:
                     raise RuntimeError
                 return None
         if self.goodFile:
-            h = self.tFile.Get(histoName)
+            h = self.tFile.Get(objectName)
             if not h: # is not None does not work for some reason
-                log.error(f"Histogram {histoName} does not exist!")
+                log.error(f"Object {objectName} does not exist!")
                 raise RuntimeError
             return h
         return None
@@ -128,7 +128,7 @@ class dataset:
             return self.sumOfWeights
 
         # get histogram with sum of weights
-        h = self.get_th(sow.histoName, False)
+        h = self.get(sow.histoName, False)
 
         if h is None:
             log.error(f"Histogram {sow.histoName} does not exist!")

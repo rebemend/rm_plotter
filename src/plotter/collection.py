@@ -84,7 +84,7 @@ class collection:
 
         collTH: Optional[TH1] = None
         for ds in self.datasets:
-            dsTH = ds.get_th(histoName, skipBad)
+            dsTH = ds.get(histoName, skipBad)
             if dsTH is None:
                 if not skipBad:
                     log.error("Got bad histogram from the dataset.")
