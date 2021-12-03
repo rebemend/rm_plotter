@@ -28,11 +28,13 @@ class legend:
 
     def add_histo(self, h: histo):
         """ Add histo to the legend """
-        self.histos.append(h)
+        if h.title != "SKIP_LEGEND":
+            self.histos.append(h)
 
     def add_histos(self, hs: List[histo]):
         """ Add list of histo to the legend """
-        self.histos.extend(hs)
+        for h in hs:
+            self.add_histo(h)
 
     def create_and_draw(self):
         """ Creates the legend from added histograms and draws

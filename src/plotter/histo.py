@@ -20,7 +20,7 @@ class histo:
     """
 
     def __init__(self, title: str, th: TH1, lineColor: int = ROOT.kBlack,
-                 fillColor: Optional[int] = None, drawOption: str = "histe",
+                 fillColor: Optional[int] = None, drawOption: str = "",
                  configPath: str = "") -> None:
         """
         Arguments:
@@ -33,7 +33,6 @@ class histo:
         self.title = title
         self.lineColor = lineColor
         self.fillColor = fillColor
-        self.drawOption = drawOption
 
         th.SetTitle(title)
         self.set_lineColor(lineColor)
@@ -44,6 +43,7 @@ class histo:
         if configPath != "":
             self.config = loader.load_config(configPath)
             self.style_histo(self.config)
+        self.drawOption = drawOption
 
     def set_fillColor(self, fillColor: int):
         """ Sets fill color """

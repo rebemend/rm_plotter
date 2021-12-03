@@ -110,3 +110,6 @@ def get_lumi() -> Dict[str, float]:
   luminosity["mc16d"] = 44307.4
   luminosity["mc16e"] = 58450.1
   return luminosity
+
+def recommended_colors():
+  return [ROOT.kBlack, ROOT.kGreen, ROOT.kGreen + 2, ROOT.kRed,ROOT.kRed + 2, ROOT.kOrange, ROOT.kOrange + 2, ROOT.kBlue, ROOT.kBlue + 2, ROOT.kViolet, ROOT.kViolet + 2, ROOT.kPink, ROOT.kPink + 2]
