@@ -28,6 +28,11 @@ class canvas:
 
         ROOT.gStyle.SetErrorX(0.5)
 
+    def cd(self):
+        """ cd() to the canvas
+        """
+        self.tcan.cd()
+
     def add_pad(self, p: "pad"):
         """ Adds pad to the canvas
 
@@ -35,7 +40,7 @@ class canvas:
             p (``pad``): pad to be added to the canvas
         """
         self.pads[p.name] = p
-        self.tcan.cd()
+        self.cd()
         p.tpad.Draw()
 
     def save(self, path: str):
@@ -69,7 +74,7 @@ class canvas:
             y (``int``): y coordinate on the canvas (fraction)
             color (``int``): ROOT TColor of the text, black by default
         """
-        self.tcan.cd()
+        self.cd()
         ltx = ROOT.TLatex()
         ltx.SetNDC()
         ltx.SetTextColor(color)
