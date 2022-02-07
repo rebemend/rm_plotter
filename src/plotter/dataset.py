@@ -4,6 +4,7 @@ from typing import Optional, Union
 import logging
 log = logging.getLogger(__name__)
 
+
 class sumOfWeightHelper:
     """ Small helper class to get sum of weight
 
@@ -103,7 +104,7 @@ class dataset:
                 return None
         if self.goodFile:
             h = self.tFile.Get(objectName)
-            if not h: # is not None does not work for some reason
+            if not h:  # is not None does not work for some reason
                 log.error(f"Object {objectName} does not exist in dataset {self.name}!")
                 raise RuntimeError
             return h
