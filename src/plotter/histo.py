@@ -40,10 +40,12 @@ class histo:
             self.set_fillColor(fillColor)
 
         self.config: Dict[str, Any] = {}
+        self.drawOption = ""
         if configPath != "":
             self.config = loader.load_config(configPath)
             self.style_histo(self.config)
-        self.drawOption = drawOption
+        if drawOption!= "":
+            self.drawOption = drawOption
 
     def set_fillColor(self, fillColor: int):
         """ Sets fill color """
