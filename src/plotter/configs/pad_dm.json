@@ -8,7 +8,7 @@
     },
     "basis":
     {
-        "x_titleOffset": 3.5,
+        "x_titleOffset": 1,
         "x_titleSize": 30,
         "x_titleFont": 43,
         "x_labelSize": 30,
@@ -18,6 +18,6 @@
         "y_titleFont": 43,
         "y_labelSize": 30,
         "y_labelFont": 43,
-        "n_div": [505, "Y"] 
+        "n_div": [505, "Y"]
     }
 }

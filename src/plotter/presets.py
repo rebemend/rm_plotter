@@ -44,7 +44,7 @@ class simple:
 
 class dataMC:
     def __init__(self, plotName: str = "", xTitle: str = "",
-                 yTitle: str = "Events", ratioTitle: str = "Data/MC",
+                 yTitle: str = "Events", ratioTitle: str = "Ratio",
                  fraction: float = 0.3):
         self.canvas = canvas(plotName)
 
@@ -83,8 +83,8 @@ class dataMC:
             self.hMCs.append(hMC)
 
         if self.nonEmpty:
-            xMin = 0.
-            xMax = 0.
+            xMin = hData.th.GetBinLowEdge(1)
+            xMax = hData.th.GetBinLowEdge(hData.th.GetNbinsX()+1)
             prevCont = False
             minDone = False
             maxDone = False
@@ -112,23 +112,33 @@ class dataMC:
         self.mainPad.add_histo(hData)
         self.mainPad.plot_histos()
 
-        self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
+
+        if self.hShapes != []:
+            self.hErr = self.hData.get_ratio(self.hData)
+            self.hRatio = self.hMCs[0].get_ratio(self.hData, fillToLine=True)
+            self.hRatioShapes = [h.get_ratio(self.hData) for h in self.hShapes]
+            self.ratioPad.add_histos([self.hErr, self.hRatio])
+            self.ratioPad.add_histos(self.hRatioShapes)
+        else:
+            self.hErr = self.hMCs[0].get_ratio(self.hMCs[0])
+            self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
+            self.ratioPad.add_histos([self.hErr, self.hRatio])
+
         self.hErr.set_fillColor(ROOT.kGray+1)
         self.hErr.set_lineColor(ROOT.kGray+1)
         # TODO: custom config
         cfgErr = loader.load_config(loader.path()+"configs/err.json")
         self.hErr.style_histo(cfgErr)
 
-        self.hRatio = hData.get_ratio(self.hMCs[0], fillToLine=True)
-        self.hRatioShapes = [h.get_ratio(self.hMCs[0]) for h in self.hShapes]
-        self.ratioPad.add_histos([self.hErr, self.hRatio])
-        if self.hRatioShapes != []:
-            self.ratioPad.add_histos(self.hRatioShapes)
         self.ratioPad.plot_histos()
 
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
+
+    def logx(self, doLog=True):
+        self.mainPad.logx(doLog)
+        self.ratioPad.logx(doLog)
 
     def save(self, plotName: str):
         self.canvas.tcan.cd()
@@ -183,6 +193,14 @@ class fraction:
         self.leg = legend()
         self.leg.add_histos(self.hFrac)
         self.leg.create_and_draw()
+
+    def set_xrange(self, min, max):
+        self.mainPad.set_xrange(min, max)
+        self.ratioPad.set_xrange(min, max)
+
+    def logx(self, doLog=True):
+        self.mainPad.logx(doLog)
+        self.ratioPad.logx(doLog)
 
     def save(self, plotName: str):
         self.canvas.save(plotName)
@@ -267,9 +285,13 @@ class Comparison:
         self.leg.add_histos(self.histos)
         self.leg.create_and_draw()
 
-    def save(self, plotName: str):
-        self.canvas.save(plotName)
-
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
+
+    def logx(self, doLog=True):
+        self.mainPad.logx(doLog)
+        self.ratioPad.logx(doLog)
+
+    def save(self, plotName: str):
+        self.canvas.save(plotName)
