@@ -14,7 +14,7 @@ class pad:
 
     def __init__(self, name: str, xl: float = 0, xh: float = 1,
                  yl: float = 0, yh: float = 1, isTH1: bool = True,
-                 configPath: str = loader.pkgPath+"configs/pad.json") -> None:
+                 configPath: str = loader.path()+"configs/pad.json") -> None:
         """
         Arguments:
             name (``str``): name of the pad

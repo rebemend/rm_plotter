@@ -12,10 +12,12 @@ Currently only loading.
 TODO: Saving? Overwrite?
 """
 
-pkgPath = os.path.dirname(sys.modules["plotter"].__file__)+"/"
+def path():
+    pkgPath = os.path.dirname(sys.modules["plotter"].__file__)
+    return pkgPath+"/"
 
 
-def load_config(path):
+def load_config(path: str):
     log.debug(f"Loading config file {path}")
     with open(path, "r") as f:
         config = json.load(f)

@@ -28,7 +28,7 @@ class xsReader:
                 if line == "" or line[0] == "#" or "SampleID" in line:
                     continue
                 split = line.split(",")
-                if len(split) < 9:
+                if len(split) < 7:
                     continue
                 dsid = split[0].strip()
                 xs = _xs()
