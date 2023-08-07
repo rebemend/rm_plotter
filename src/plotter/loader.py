@@ -12,6 +12,7 @@ Currently only loading.
 TODO: Saving? Overwrite?
 """
 
+
 def path():
     pkgPath = os.path.dirname(sys.modules["plotter"].__file__)
     return pkgPath+"/"

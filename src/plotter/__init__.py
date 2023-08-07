@@ -11,4 +11,4 @@ from . import presets  # NOQA
 from . import loader  # NOQA
 from . import atlas  # NOQA
 from . import thHelper  # NOQA
-from .quiet import Quiet
+from .quiet import Quiet  # NOQA

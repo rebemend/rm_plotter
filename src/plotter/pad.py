@@ -302,25 +302,38 @@ class pad:
         log.debug("Updating basis style")
 
         for opt, set in style.items():
-            if "x_" in opt:
-                axis = self.basis.th.GetXaxis()
-            else:
-                axis = self.basis.th.GetYaxis()
+            self.update_style(opt, set)
 
-            if "titleOffset" in opt:
-                axis.SetTitleOffset(set)
-            elif "titleSize" in opt:
-                axis.SetTitleSize(set)
-            elif "titleFont" in opt:
-                axis.SetTitleFont(set)
-            elif "labelSize" in opt:
-                axis.SetLabelSize(set)
-            elif "labelFont" in opt:
-                axis.SetLabelFont(set)
-            elif "n_div" in opt:
-                if len(set) != 2:
-                    log.error("n_div option in wrong format, need two items")
-                self.basis.th.SetNdivisions(set[0], set[1])
-            else:
-                log.error(f"Unknown option {opt}")
-                raise RuntimeError
+    def update_style(self, opt: str, set: Any) -> None:
+        """Update an option.
+
+        Arguments:
+            opt (``str``): option name
+            set (``Any``): option value
+        """
+        if self.basis is None:
+            log.error("Called pad style but no basis yet!")
+            raise RuntimeError
+
+        if "x_" in opt:
+            axis = self.basis.th.GetXaxis()
+        else:
+            axis = self.basis.th.GetYaxis()
+
+        if "titleOffset" in opt:
+            axis.SetTitleOffset(set)
+        elif "titleSize" in opt:
+            axis.SetTitleSize(set)
+        elif "titleFont" in opt:
+            axis.SetTitleFont(set)
+        elif "labelSize" in opt:
+            axis.SetLabelSize(set)
+        elif "labelFont" in opt:
+            axis.SetLabelFont(set)
+        elif "n_div" in opt:
+            if len(set) != 2:
+                log.error("n_div option in wrong format, need two items")
+            self.basis.th.SetNdivisions(set[0], set[1])
+        else:
+            log.error(f"Unknown option {opt}")
+            raise RuntimeError

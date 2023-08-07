@@ -44,7 +44,7 @@ class histo:
         if configPath != "":
             self.config = loader.load_config(configPath)
             self.style_histo(self.config)
-        if drawOption!= "":
+        if drawOption != "":
             self.drawOption = drawOption
 
     def set_fillColor(self, fillColor: int):
