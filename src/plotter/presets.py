@@ -212,7 +212,7 @@ class fraction:
 class Comparison:
     def __init__(self, plotName: str = "", xTitle: str = "",
                  yTitle: str = "Events", ratioTitle: str = "Ratio",
-                 fraction: float = 0.3, nonEmpty = True):
+                 fraction: float = 0.3, nonEmpty: bool = True):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", yl=fraction,

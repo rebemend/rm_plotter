@@ -44,6 +44,7 @@ def divide_ratio(numTH: TH1, denTH: TH1) -> None:
         numTH.SetBinContent(iBin, newVal)
         numTH.SetBinError(iBin, newErr)
 
+
 def divide_ratio_graph(num: TGraph, den: TGraph) -> None:
     """ For ratio, we do not to take into account
     errors of the denominator!
@@ -55,15 +56,15 @@ def divide_ratio_graph(num: TGraph, den: TGraph) -> None:
             (denominator, unchanged)
     """
     size = min(num.GetN(), den.GetN())
-    dRem = 0 # accounts for removed points (points where den=0)
+    dRem = 0  # accounts for removed points (points where den=0)
 
     for i in range(size):
-        errUp = 0;
-        errDo = 0;
-        val = 0;
-        denVal = den.GetY()[i-dRem];
+        errUp = 0
+        errDo = 0
+        val = 0
+        denVal = den.GetY()[i-dRem]
         if denVal != 0:
-            val = num.GetY()[i-dRem] / denVal;
+            val = num.GetY()[i-dRem] / denVal
             if num.InheritsFrom("TGraphAsymmErrors"):
                 errUp = num.GetErrorYhigh(i-dRem) / denVal
                 errDo = num.GetErrorYlow(i-dRem) / denVal
@@ -80,7 +81,7 @@ def divide_ratio_graph(num: TGraph, den: TGraph) -> None:
             dRem += 1
 
 
-def get_graph_minimum(g: TGraph) -> None:
+def get_graph_minimum(g: TGraph) -> float:
     """ Get minimum of a graph
 
     Arguments:
@@ -90,7 +91,8 @@ def get_graph_minimum(g: TGraph) -> None:
         return -1111
     return min(g.GetY())
 
-def get_graph_maximum(g: TGraph) -> None:
+
+def get_graph_maximum(g: TGraph) -> float:
     """ Get minimum of a graph
 
     Arguments:

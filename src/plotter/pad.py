@@ -55,10 +55,10 @@ class pad:
 
         self.basis: Optional[histo] = None
 
-    def reset_histos(self):
+    def reset_histos(self) -> None:
         """ Removes all histograms but keeps all non-histo settings
         """
-        self.histos: List[histo] = []
+        self.histos = []
         self.customXrange = False
         self.customYrange = False
         self.basis = None
@@ -127,39 +127,46 @@ class pad:
             h (``histo``): added histogram
         """
 
-        if not self.isTH1:
-            self.histos.append(h)
-            return
-
-        if not self.customXrange:
-            if self.histos == []:
-                self.xMin = h.th.GetBinLowEdge(1)
-                self.xMax = h.th.GetBinLowEdge(h.th.GetNbinsX()+1)
-
-        # if custom range defined, skip the automatic derivation
-        if not self.customYrange and self.isTH1:
-            if self.histos == []:
-                if h.isTH1:
-                    self.yMin = h.th.GetMinimum(0)
-                    self.yMax = h.th.GetMaximum()
-                elif h.isTGraph:
-                    self.yMin = thHelper.get_graph_minimum(h.th)
-                    self.yMax = thHelper.get_graph_maximum(h.th)
-            else:
-                if h.isTH1:
-                    if self.yMin > h.th.GetMinimum(0):
-                        self.yMin = h.th.GetMinimum(0)
-                    if self.yMax < h.th.GetMaximum():
-                        self.yMax = h.th.GetMaximum()
-                elif h.isTGraph:
-                    cur_min  = thHelper.get_graph_minimum(h.th)
-                    if self.yMin > cur_min:
-                        self.yMin = cur_min
-                    cur_max = thHelper.get_graph_maximum(h.th)
-                    if self.yMax < cur_max:
-                        self.yMax = cur_max
+        if h.isTH1:
+            self._update_range_th1(h)
+        elif h.isTGraph:
+            self._update_range_tgraph(h)
 
         self.histos.append(h)
+
+    def _update_range_th1(self, h: histo) -> None:
+        """Updates yMin/yMax if applicable for TH1"""
+
+        # if custom range defined, skip the automatic derivation
+        if self.customYrange:
+            return
+
+        if self.histos == []:
+            self.yMin = h.th.GetMinimum(0)
+            self.yMax = h.th.GetMaximum()
+        else:
+            if self.yMin > h.th.GetMinimum(0):
+                self.yMin = h.th.GetMinimum(0)
+            if self.yMax < h.th.GetMaximum():
+                self.yMax = h.th.GetMaximum()
+
+    def _update_range_tgraph(self, h: histo) -> None:
+        """Updates yMin/yMax if applicable for TH1"""
+
+        # if custom range defined, skip the automatic derivation
+        if self.customYrange:
+            return
+
+        if self.histos == []:
+            self.yMin = thHelper.get_graph_minimum(h.th)
+            self.yMax = thHelper.get_graph_maximum(h.th)
+        else:
+            cur_min = thHelper.get_graph_minimum(h.th)
+            if self.yMin > cur_min:
+                self.yMin = cur_min
+            cur_max = thHelper.get_graph_maximum(h.th)
+            if self.yMax < cur_max:
+                self.yMax = cur_max
 
     def plot_histos(self) -> None:
         """ Plots histograms, including creation of basis,
@@ -179,12 +186,12 @@ class pad:
         # TODO: add histo.clone??
         if self.histos[0].isTGraph:
             self.basis = histo("", self.histos[0].th.Clone("basis").GetHistogram(),
-                           lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
-                           drawOption="hist")
+                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
+                               drawOption="hist")
         else:
             self.basis = histo("", self.histos[0].th.Clone("basis"),
-                           lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
-                           drawOption="hist")
+                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
+                               drawOption="hist")
         self.basis.th.Reset()
         self._set_basis_axis_title()
 
@@ -203,7 +210,6 @@ class pad:
 
         for h in self.histos:
             h.draw(suffix=" same")
-
 
         self.basis.draw(drawOption="sameaxis")
 
