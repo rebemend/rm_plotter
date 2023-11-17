@@ -212,7 +212,7 @@ class fraction:
 class Comparison:
     def __init__(self, plotName: str = "", xTitle: str = "",
                  yTitle: str = "Events", ratioTitle: str = "Ratio",
-                 fraction: float = 0.3):
+                 fraction: float = 0.3, nonEmpty: bool = True):
         self.canvas = canvas(plotName)
 
         self.mainPad = pad("main", yl=fraction,
@@ -228,7 +228,7 @@ class Comparison:
         self.ratioPad.margins(up=0)
         self.ratioPad.set_title(xTitle, ratioTitle)
 
-        self.nonEmpty = True
+        self.nonEmpty = nonEmpty
 
     def add_and_plot(self, histos: List[histo]):
 
