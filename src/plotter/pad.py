@@ -6,16 +6,24 @@ from ROOT import TPad
 from typing import List, Dict, Optional, Any
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class pad:
-    """ Wrapper around TPad
-    """
+    """Wrapper around TPad"""
 
-    def __init__(self, name: str, xl: float = 0, xh: float = 1,
-                 yl: float = 0, yh: float = 1, isTH1: bool = True,
-                 configPath: str = loader.path()+"configs/pad.json") -> None:
+    def __init__(
+        self,
+        name: str,
+        xl: float = 0,
+        xh: float = 1,
+        yl: float = 0,
+        yh: float = 1,
+        isTH1: bool = True,
+        configPath: str = loader.path() + "configs/pad.json",
+        autoY=True,
+    ) -> None:
         """
         Arguments:
             name (``str``): name of the pad
@@ -23,7 +31,9 @@ class pad:
             xh (``int``): fraction of x-axis of the canvas the pad ends at
             yl (``int``): fraction of y-axis of the canvas the pad starts at
             yh (``int``): fraction of y-axis of the canvas the pad ends at
+            isTH1 (``bool``): if true, advanced axis functions are used
             config (``str``): path to config of pad
+            autoY (``bool``): if true, y-axis is autoscaled
         """
         self.tpad = TPad(name, name, xl, yl, xh, yh)
         self.name = name
@@ -43,31 +53,35 @@ class pad:
         self.xTitle = ""
         self.yTitle = ""
 
-        self.yMin = 0.
-        self.yMax = 1.
-        self.xMin = 0.
-        self.xMax = 1.
+        self.yMin = 0.0
+        self.yMinZero = 0.0  # for log, minimum >0
+        self.yMax = 1.0
+        self.xMin = 0.0
+        self.xMax = 1.0
         # the logarithm of the y-axis is saved, as it affects the y-range
         self.isLogY = False
         # if user specifies y-range, we do not want to derive it automatically
         self.customYrange = False
         self.customXrange = False
+        self.autoY = autoY
 
         self.basis: Optional[histo] = None
 
     def reset_histos(self) -> None:
-        """ Removes all histograms but keeps all non-histo settings
-        """
+        """Removes all histograms but keeps all non-histo settings"""
         self.histos = []
         self.customXrange = False
         self.customYrange = False
         self.basis = None
 
-    def margins(self, up: Optional[float] = None,
-                down: Optional[float] = None,
-                left: Optional[float] = None,
-                right: Optional[float] = None) -> None:
-        """ Set margins of the pad with default values,
+    def margins(
+        self,
+        up: Optional[float] = None,
+        down: Optional[float] = None,
+        left: Optional[float] = None,
+        right: Optional[float] = None,
+    ) -> None:
+        """Set margins of the pad with default values,
         which work for the atlas style.
 
         Arguments:
@@ -86,7 +100,7 @@ class pad:
             self.tpad.SetRightMargin(right)
 
     def logx(self, doLog: bool = True) -> None:
-        """ Sets the X-axis to log/lin
+        """Sets the X-axis to log/lin
 
         Arguments:
             doLog (``bool``): if true, set logarithmic
@@ -94,7 +108,7 @@ class pad:
         self.tpad.SetLogx(doLog)
 
     def logy(self, doLog: bool = True) -> None:
-        """ Sets the Y-axis to log/lin
+        """Sets the Y-axis to log/lin
 
         Arguments:
             doLog (``bool``): if true, set logarithmic
@@ -106,13 +120,13 @@ class pad:
         self.isLogY = doLog
 
         if self.basis is not None:
-            if not self.customYrange:
+            if not self.customYrange and self.autoY:
                 self._set_basis_yrange(margin=1.5)
             else:
                 self._set_basis_yrange(margin=1)
 
     def add_histos(self, histos: List[histo]) -> None:
-        """ Adds list of histograms to the pad
+        """Adds list of histograms to the pad
 
         Arguments:
             histos (``List[hist]``): list of histos to be added
@@ -121,7 +135,7 @@ class pad:
             self.add_histo(h)
 
     def add_histo(self, h: histo) -> None:
-        """ Adds histogram to the pad and update min/max y value
+        """Adds histogram to the pad and update min/max y value
 
         Arguments:
             h (``histo``): added histogram
@@ -137,16 +151,24 @@ class pad:
     def _update_range_th1(self, h: histo) -> None:
         """Updates yMin/yMax if applicable for TH1"""
 
+        if not self.customXrange:
+            if self.histos == []:
+                self.xMin = h.th.GetBinLowEdge(1)
+                self.xMax = h.th.GetBinLowEdge(h.th.GetNbinsX() + 1)
+
         # if custom range defined, skip the automatic derivation
         if self.customYrange:
             return
 
         if self.histos == []:
-            self.yMin = h.th.GetMinimum(0)
+            self.yMin = h.th.GetMinimum()
+            self.yMinZero = h.th.GetMinimum(0)
             self.yMax = h.th.GetMaximum()
         else:
-            if self.yMin > h.th.GetMinimum(0):
-                self.yMin = h.th.GetMinimum(0)
+            if self.yMin > h.th.GetMinimum():
+                self.yMin = h.th.GetMinimum()
+            if self.yMinZero > h.th.GetMinimum(0):
+                self.yMinZero = h.th.GetMinimum(0)
             if self.yMax < h.th.GetMaximum():
                 self.yMax = h.th.GetMaximum()
 
@@ -169,9 +191,9 @@ class pad:
                 self.yMax = cur_max
 
     def plot_histos(self) -> None:
-        """ Plots histograms, including creation of basis,
-            which handles some properties of the plot,
-            like the axis title or range
+        """Plots histograms, including creation of basis,
+        which handles some properties of the plot,
+        like the axis title or range
         """
 
         if len(self.histos) == 0:
@@ -185,19 +207,27 @@ class pad:
         # histograms
         # TODO: add histo.clone??
         if self.histos[0].isTGraph:
-            self.basis = histo("", self.histos[0].th.Clone("basis").GetHistogram(),
-                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
-                               drawOption="hist")
+            self.basis = histo(
+                "",
+                self.histos[0].th.Clone("basis").GetHistogram(),
+                lineColor=ROOT.kWhite,
+                fillColor=ROOT.kWhite,
+                drawOption="hist",
+            )
         else:
-            self.basis = histo("", self.histos[0].th.Clone("basis"),
-                               lineColor=ROOT.kWhite, fillColor=ROOT.kWhite,
-                               drawOption="hist")
+            self.basis = histo(
+                "",
+                self.histos[0].th.Clone("basis"),
+                lineColor=ROOT.kWhite,
+                fillColor=ROOT.kWhite,
+                drawOption="hist",
+            )
         self.basis.th.Reset()
         self._set_basis_axis_title()
 
         if self.customYrange:
             self._set_basis_yrange(margin=1)
-        elif self.isTH1:
+        elif self.isTH1 and self.autoY:
             self._set_basis_yrange(margin=1.5)
         if self.customXrange or self.isTH1:
             self._set_basis_xrange()
@@ -214,7 +244,7 @@ class pad:
         self.basis.draw(drawOption="sameaxis")
 
     def _set_basis_axis_title(self) -> None:
-        """ Sets titles of the axis through the basis histogram"""
+        """Sets titles of the axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
             raise RuntimeError
@@ -223,7 +253,7 @@ class pad:
         self.basis.th.GetYaxis().SetTitle(self.yTitle)
 
     def set_title(self, xTitle: str = "", yTitle: str = "") -> None:
-        """ Saves the axis titles, applies to the basis if already exists
+        """Saves the axis titles, applies to the basis if already exists
 
         Arguments:
             xTitle (``str``): title of the x-axis
@@ -236,7 +266,7 @@ class pad:
             self._set_basis_axis_title()
 
     def _set_basis_yrange(self, margin=1) -> None:
-        """ Sets rangeof the y-axis through the basis histogram"""
+        """Sets rangeof the y-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
             raise RuntimeError
@@ -245,22 +275,29 @@ class pad:
         # TODO: margin as class variable?
 
         if not self.isLogY:
-            self.basis.th.GetYaxis().SetRangeUser(self.yMin, self.yMax*margin)
+            self.basis.th.GetYaxis().SetRangeUser(self.yMin, self.yMax * margin)
         # for log it is little bit more complicated
         # but this usually ends up looking nice
         else:
-            if self.yMin == 0 or self.yMax == 0:
-                log.warning("Histograms y max/min=0, probably empty")
+            # Cannot do log if all values negative
+            if self.yMax < 0:
+                log.warning("Histogram has only negative values, cannot do log!")
+            if self.yMax == 0:
+                log.warning("Histogram max is 0, cannot do log!")
             else:
-                fPlot = 1./margin  # plot takes 1/margin of the plot vertically
+                fPlot = 1.0 / margin  # plot takes 1/margin of the plot vertically
                 fBot = 0.02  # little bit space on the bottom
-                fLeg = 1-fPlot-0.02  # legend takes most of therest
-                yMinLog = pow(self.yMin, (fPlot+fBot)/fPlot)/pow(self.yMax, fBot/fPlot)
-                yMaxLog = pow(self.yMax, (1.-fBot)/fPlot)/pow(self.yMin, fLeg/fPlot)
+                fLeg = 1 - fPlot - 0.02  # legend takes most of therest
+                yMinLog = pow(self.yMinZero, (fPlot + fBot) / fPlot) / pow(
+                    self.yMax, fBot / fPlot
+                )
+                yMaxLog = pow(self.yMax, (1.0 - fBot) / fPlot) / pow(
+                    self.yMinZero, fLeg / fPlot
+                )
                 self.basis.th.GetYaxis().SetRangeUser(yMinLog, yMaxLog)
 
     def set_yrange(self, yMin: float = 0, yMax: float = 1) -> None:
-        """ Saves the y-axis range, applies to the basis if already exists
+        """Saves the y-axis range, applies to the basis if already exists
 
         Arguments:
             yMin (``float``): lower range of the y-axis
@@ -270,11 +307,11 @@ class pad:
         self.yMax = yMax
         self.customYrange = True
 
-        if self.basis is not None:
+        if self.basis is not None and self.autoY:
             self._set_basis_yrange()
 
     def _set_basis_xrange(self) -> None:
-        """ Sets rangeof the x-axis through the basis histogram"""
+        """Sets rangeof the x-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
             raise RuntimeError
@@ -282,7 +319,7 @@ class pad:
         self.basis.th.GetXaxis().SetRangeUser(self.xMin, self.xMax)
 
     def set_xrange(self, xMin: float = 0, xMax: float = 1) -> None:
-        """ Saves the x-axis range, applies to the basis if already exists
+        """Saves the x-axis range, applies to the basis if already exists
 
         Arguments:
             xMin (``float``): lower range of the x-axis
@@ -296,7 +333,7 @@ class pad:
             self._set_basis_xrange()
 
     def style_pad_margin(self, style: Dict[str, Any]) -> None:
-        """ Applies style to the pad margins
+        """Applies style to the pad margins
 
         Arguments:
             style (``Dict[str, Any]``): style config
@@ -318,7 +355,7 @@ class pad:
                 raise RuntimeError
 
     def style_pad_basis(self, style: Dict[str, Any]) -> None:
-        """ Applies style to the pad basis
+        """Applies style to the pad basis
 
         Arguments:
             style (``Dict[str, Any]``): style config
@@ -345,24 +382,42 @@ class pad:
 
         if "x_" in opt:
             axis = self.basis.th.GetXaxis()
-        else:
+            update_style_axis(axis, opt, set)
+        elif "y_" in opt:
             axis = self.basis.th.GetYaxis()
-
-        if "titleOffset" in opt:
-            axis.SetTitleOffset(set)
-        elif "titleSize" in opt:
-            axis.SetTitleSize(set)
-        elif "titleFont" in opt:
-            axis.SetTitleFont(set)
-        elif "labelSize" in opt:
-            axis.SetLabelSize(set)
-        elif "labelFont" in opt:
-            axis.SetLabelFont(set)
+            update_style_axis(axis, opt, set)
         elif "n_div" in opt:
             if len(set) != 2:
                 log.error("n_div option in wrong format, need two items")
-                if self.basis.isTH1:
-                    self.basis.th.SetNdivisions(set[0], set[1])
+                raise RuntimeError
+            if self.basis.isTH1:
+                self.basis.th.SetNdivisions(set[0], set[1])
         else:
             log.error(f"Unknown option {opt}")
             raise RuntimeError
+
+
+# STYLE HELPERS
+
+
+def update_style_axis(axis, opt, set):
+    """Update style of an axis
+
+    Arguments:
+        axis (``TAxis``): axis to update
+        opt (``str``): option name
+        set (``Any``): option value
+    """
+    if "titleOffset" in opt:
+        axis.SetTitleOffset(set)
+    elif "titleSize" in opt:
+        axis.SetTitleSize(set)
+    elif "titleFont" in opt:
+        axis.SetTitleFont(set)
+    elif "labelSize" in opt:
+        axis.SetLabelSize(set)
+    elif "labelFont" in opt:
+        axis.SetLabelFont(set)
+    else:
+        log.error(f"Unknown option {opt}")
+        raise RuntimeError

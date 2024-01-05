@@ -2,26 +2,33 @@ import ROOT
 from ROOT import TH1
 from . import thHelper
 from . import loader
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Union
 
 import logging
+
 log = logging.getLogger(__name__)
 
 ROOT.TH1.AddDirectory(False)
 
 
 class histo:
-    """ Wrapper class around TH1, setups the main properties
-        + contains few usefull function (e.g. divide_ratio)
+    """Wrapper class around TH1, setups the main properties
+    + contains few usefull function (e.g. divide_ratio)
 
-        The idea is that the rather short constructor holds
-        all properties needed for plotting, all the others
-        are handled by other classes
+    The idea is that the rather short constructor holds
+    all properties needed for plotting, all the others
+    are handled by other classes
     """
 
-    def __init__(self, title: str, th: TH1, lineColor: int = ROOT.kBlack,
-                 fillColor: Optional[int] = None, drawOption: str = "",
-                 configPath: str = "") -> None:
+    def __init__(
+        self,
+        title: str,
+        th: TH1,
+        lineColor: int = ROOT.kBlack,
+        fillColor: Optional[int] = None,
+        drawOption: str = "",
+        configPath: str = "",
+    ) -> None:
         """
         Arguments:
             th (``TH1``): ROOT histogram
@@ -33,30 +40,30 @@ class histo:
         self.title = title
         self.lineColor = lineColor
         self.fillColor = fillColor
-
-        th.SetTitle(title)
-        self.set_lineColor(lineColor)
-        if fillColor is not None:
-            self.set_fillColor(fillColor)
-
-        self.config: Dict[str, Any] = {}
-        self.drawOption = ""
-        if configPath != "":
-            self.config = loader.load_config(configPath)
-            self.style_histo(self.config)
+        self.config = loader.load_config(configPath) if configPath != "" else {}
+        self.apply_all_style()
         if drawOption != "":
             self.drawOption = drawOption
 
         self.isTH1 = th.InheritsFrom("TH1")
         self.isTGraph = th.InheritsFrom("TGraph")
 
+    def apply_all_style(self):
+        self.th.SetTitle(self.title)
+        self.set_lineColor(self.lineColor)
+        if self.fillColor is not None:
+            self.set_fillColor(self.fillColor)
+
+        if self.config != "":
+            self.style_histo(self.config)
+
     def set_fillColor(self, fillColor: int):
-        """ Sets fill color """
+        """Sets fill color"""
         self.fillColor = fillColor
         self.th.SetFillColor(fillColor)
 
     def set_lineColor(self, lineColor: int):
-        """ Sets line color """
+        """Sets line color"""
         self.lineColor = lineColor
         self.th.SetLineColor(lineColor)
         # Is there situation where we want line and marker
@@ -64,7 +71,7 @@ class histo:
         self.th.SetMarkerColor(lineColor)
 
     def draw(self, suffix: str = "", drawOption: Optional[str] = None) -> None:
-        """ TH1.Draw wrapper,
+        """TH1.Draw wrapper,
 
         Arguments
             option (``str``): if want to overwrite self.option
@@ -72,18 +79,18 @@ class histo:
         """
         if drawOption is None:
             drawOption = self.drawOption
-        self.th.Draw(drawOption+suffix)
+        self.th.Draw(drawOption + suffix)
 
     def divide(self, otherHisto: "histo", option: str = "") -> bool:
-        """ Add ROOT::TH1::Divide to histo level
+        """Add ROOT::TH1::Divide to histo level
 
         Arguments:
             otherHist (``histo``): histogram to divide by
-            option (``str``): if B then binomial errors """
+            option (``str``): if B then binomial errors"""
         return self.th.Divide(self.th, otherHisto.th, 1, 1, option)
 
     def divide_ratio(self, otherHisto: "histo"):
-        """ For ratio, we do not to take into account
+        """For ratio, we do not to take into account
         errors of otherHisto!
 
         Uses function from thHelper
@@ -93,9 +100,10 @@ class histo:
         """
         thHelper.divide_ratio(self.th, otherHisto.th)
 
-    def get_ratio(self, otherHisto: "histo", suffix: str = "ratio",
-                  fillToLine: bool = False) -> "histo":
-        """ Returns clone of the saved histogram and divides by otherHist.
+    def get_ratio(
+        self, otherHisto: "histo", suffix: str = "ratio", fillToLine: bool = False
+    ) -> "histo":
+        """Returns clone of the saved histogram and divides by otherHist.
         All the other properties are copied.
 
         Arguments:
@@ -119,11 +127,16 @@ class histo:
         if fillToLine and self.fillColor is not None:
             lineColor = self.fillColor
 
-        return histo(self.title+"_"+suffix, th, lineColor=lineColor,
-                     fillColor=fillColor, drawOption=self.drawOption)
+        return histo(
+            self.title + "_" + suffix,
+            th,
+            lineColor=lineColor,
+            fillColor=fillColor,
+            drawOption=self.drawOption,
+        )
 
     def style_histo(self, style: Dict[str, Any]) -> None:
-        """ Applies style to the histo
+        """Applies style to the histo
 
         Arguments:
             style (``Dict[str, Any]``): style config
@@ -143,3 +156,20 @@ class histo:
             else:
                 log.error(f"Unknown option {opt}")
                 raise RuntimeError
+
+    def rebin(self, binning: Union[int, List[float]] = []):
+        """Rebins histogram either based on nbin or binning.
+
+        If variable is int then just merges given number of bins (so TH1::Rebin),
+        otherwise assume binning is list and creates new histogram with that binning.
+
+        Arguments:
+            binning (``Union[int, List[float]]``): binning used in the new histogram
+        """
+
+        if isinstance(binning, int):
+            self.th.Rebin(binning)
+            return
+
+        self.th = thHelper.rebin(self.th, binning, False)
+        self.apply_all_style()
