@@ -12,3 +12,4 @@ from . import loader  # NOQA
 from . import atlas  # NOQA
 from . import thHelper  # NOQA
 from .quiet import Quiet  # NOQA
+from .tfile2 import TFile2  # NOQA
