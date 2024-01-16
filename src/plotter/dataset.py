@@ -1,19 +1,28 @@
-from ROOT import TFile, TH1, TTree
+from ROOT import TH1, TTree
 from typing import Optional, Union
 import os
 
+# This way we can easily switch back to
+# TFile from ROOT if needed
+# Right now TFile2 does not provide
+# any advantage for dataset but
+# its derived class anyway
+from .tfile2 import TFile2 as TFile
+
 import logging
+
 log = logging.getLogger(__name__)
 
 
 class sumOfWeightHelper:
-    """ Small helper class to get sum of weight
+    """Small helper class to get sum of weight
 
     Since it is shared for whole analysis
     it is better to just pass one object.
     However, it is not global enough to have it shared
     globally or something.
     """
+
     def __init__(self, histoName: str, histoBin: int) -> None:
         """
         Arguments:
@@ -25,8 +34,8 @@ class sumOfWeightHelper:
 
 
 class dataset:
-    """ Manages single ROOT TFile
-    """
+    """Manages single ROOT TFile"""
+
     def __init__(self, title: str, path: str, XS: float = 1, lumi: float = 1) -> None:
         """
         Arguments:
@@ -60,7 +69,7 @@ class dataset:
         self.sumOfWeights = 0
 
     def open_tfile(self, skipBad: bool = False) -> bool:
-        """ Opens TFile corresponding to the path,
+        """Opens TFile corresponding to the path,
         returns True if succesfull
 
         Arguments:
@@ -88,8 +97,10 @@ class dataset:
         else:
             return self.goodFile
 
-    def get(self, objectName: str, skipBad: bool = False) -> Optional[Union[TH1, TTree]]:
-        """ Returns Object (usually TH1) corresponding to the path
+    def get(
+        self, objectName: str, skipBad: bool = False
+    ) -> Optional[Union[TH1, TTree]]:
+        """Returns Object (usually TH1) corresponding to the path
 
         Arguments:
             skipBad (``bool``): if True, does not
@@ -113,7 +124,7 @@ class dataset:
         return None
 
     def get_sumOfWeights(self, sow: sumOfWeightHelper) -> float:
-        """ Defines sum of weight of given dataset and returns it.
+        """Defines sum of weight of given dataset and returns it.
         The weight is saved so next time function is called the same
         value is simply returned.
 
