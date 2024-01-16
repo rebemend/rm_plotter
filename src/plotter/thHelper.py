@@ -148,3 +148,24 @@ def get_graph_maximum(g: TGraph) -> float:
     if g.GetN() == 0:
         return -1111
     return max(g.GetY())
+
+def get_th1_error_as_hist(th1: TH1):
+    """Get error of the TH1 as two TH1s for up and down error
+
+    Arguments:
+        th1 (``TH1``): target TH1
+
+    Returns:
+        th1_error_up (``TH1``): TH1 with up error
+        th1_error_down (``TH1``): TH1 with down error
+    """
+    th1_error_up = th1.Clone()
+    th1_error_up.SetName(th1.GetName() + '_error_up')
+    th1_error_up.Reset()
+    th1_error_down = th1.Clone()
+    th1_error_down.SetName(th1.GetName() + '_error_down')
+    th1_error_down.Reset()
+    for i in range(1, th1.GetNbinsX()+1):
+        th1_error_up.SetBinContent(i, th1.GetBinContent(i) + th1.GetBinError(i))
+        th1_error_down.SetBinContent(i, th1.GetBinContent(i) - th1.GetBinError(i))
+    return th1_error_up, th1_error_down

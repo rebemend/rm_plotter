@@ -13,7 +13,7 @@ class TFile2(TFile):
     def __init__(self, *args, **kwargs):
         super(TFile2, self).__init__(*args, **kwargs)
 
-    def mkdir(self, dirName: str):
+    def mkdir_and_cd(self, dirName: str):
         """Create directory with context manager
         to enter it.
         """
@@ -39,12 +39,16 @@ class _MkdirContext:
         dirName (`str`): directory name
     """
 
-    def __init__(self, tFile: TFile, dirName: str):
+    def __init__(self, tFile: TFile2, dirName: str):
         self.tFile = tFile
         self.dirName = dirName
         self._dir = self.tFile.GetDirectory(self.dirName)
         if not self._dir:
-            self._dir = self.tFile.mkdir(self.dirName)
+            self.tFile.mkdir(self.dirName)
+            # for some reason mkdir dir returns
+            # only top-level directory so we have
+            # call GetDirectory again
+            self._dir = self.tFile.GetDirectory(self.dirName)
 
         self.old_dir = None
 
