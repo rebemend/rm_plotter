@@ -121,7 +121,7 @@ class pad:
 
         if self.basis is not None:
             if not self.customYrange and self.autoY:
-                self._set_basis_yrange(margin=1.5)
+                self._set_basis_yrange(margin=1.6)
             else:
                 self._set_basis_yrange(margin=1)
 
@@ -228,7 +228,7 @@ class pad:
         if self.customYrange:
             self._set_basis_yrange(margin=1)
         elif self.isTH1 and self.autoY:
-            self._set_basis_yrange(margin=1.5)
+            self._set_basis_yrange(margin=1.6)
         if self.customXrange or self.isTH1:
             self._set_basis_xrange()
 
@@ -265,7 +265,7 @@ class pad:
         if self.basis is not None:
             self._set_basis_axis_title()
 
-    def _set_basis_yrange(self, margin=1) -> None:
+    def _set_basis_yrange(self, margin: float = 1.) -> None:
         """Sets rangeof the y-axis through the basis histogram"""
         if self.basis is None:
             log.error("Called basis function but no basis yet!")
@@ -285,9 +285,9 @@ class pad:
             if self.yMax == 0:
                 log.warning("Histogram max is 0, cannot do log!")
             else:
-                fPlot = 1.0 / margin  # plot takes 1/margin of the plot vertically
-                fBot = 0.02  # little bit space on the bottom
-                fLeg = 1 - fPlot - 0.02  # legend takes most of therest
+                fBot = 0.01  # little bit space on the bottom
+                fPlot = 1.0 / margin - fBot  # plot takes 1/margin of the plot vertically
+                fLeg = 1.0 - fPlot  # legend takes most of therest
                 yMinLog = pow(self.yMinZero, (fPlot + fBot) / fPlot) / pow(
                     self.yMax, fBot / fPlot
                 )

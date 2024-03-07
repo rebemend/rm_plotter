@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 class legend:
     """ Wrapper around TLegend"""
     def __init__(self, xMin: float = 0.58, xMax: float = 0.96,
-                 height: float = 0.04, yMax: float = 0.94, nColumns: int = 1) -> None:
+                 height: float = 0.03, yMax: float = 0.94, nColumns: int = 1) -> None:
         """
         Arguments:
             xMin (``float``): lower x position of the legend
