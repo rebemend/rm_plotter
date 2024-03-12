@@ -150,16 +150,16 @@ def recommended_colors():
     """
     return [
         ROOT.kBlack,
-        ROOT.kGreen + 1,
+        ROOT.kGreen +2,
         ROOT.kRed,
-        ROOT.kOrange,
+        ROOT.kOrange-1,
         ROOT.kBlue,
-        ROOT.kViolet,
-        ROOT.kPink,
-        ROOT.kGreen + 3,
-        ROOT.kRed + 2,
+        ROOT.kViolet-1,
+        ROOT.kMagenta,
+        ROOT.kCyan+1,
+        ROOT.kGreen -1,
         ROOT.kOrange + 2,
         ROOT.kBlue + 2,
         ROOT.kViolet + 2,
-        ROOT.kPink + 2,
+        ROOT.kMagenta + 2,
     ]

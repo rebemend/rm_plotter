@@ -3,8 +3,9 @@ import ROOT
 
 class Quiet:
     """Context manager for silencing certain ROOT operations.  Usage:
-    with Quiet(level = .kInfo+1):
-       foo_that_makes_output
+
+        with Quiet(level = .kInfo+1):
+            foo_that_makes_output
 
     You can set a higher or lower warning level to ignore different
     kinds of messages.  After the end of indentation, the level is set
