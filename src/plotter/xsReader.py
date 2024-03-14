@@ -24,10 +24,10 @@ class xsReader:
             self.add_file(filePath)
 
     @staticmethod
-    def string2float(string: str) -> float:
+    def string2float(msg: str, string: str)-> float:
         new_str = string.strip()
         if new_str == "NULL":
-            log.warning("String is `NULL`, returning 1!")
+            log.warning(f"{msg}String is `NULL`, returning 1!")
             return 1
         return float(new_str)
 
@@ -41,9 +41,13 @@ class xsReader:
                     continue
                 dsid = split[0].strip()
                 xs = _xs()
-                xs.XS = xsReader.string2float(split[1])
-                xs.kFactor = xsReader.string2float(split[2])
-                xs.filtEff = xsReader.string2float(split[3])
+                xs.XS = xsReader.string2float(f"DSID {dsid} XS: ", split[1])
+                xs.kFactor = xsReader.string2float(
+                    f"DSID {dsid} k-factor: ", split[2]
+                )
+                xs.filtEff = xsReader.string2float(
+                    f"DSID {dsid} filter efficiency: ", split[3]
+                )
                 self.XSsection[dsid] = xs
 
     def get_xs(self, dsid: str, oneIfMissing: bool = False) -> float:
