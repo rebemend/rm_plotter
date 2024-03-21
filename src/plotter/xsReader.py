@@ -14,6 +14,9 @@ class _xs:
     def get_xs(self):
         return self.XS * self.kFactor * self.filtEff
 
+    def __eq__(self, other: "_xs") -> bool:
+        return self.get_xs() - other.get_xs() == 0
+
 
 class xsReader:
     def __init__(self) -> None:
@@ -48,6 +51,13 @@ class xsReader:
                 xs.filtEff = xsReader.string2float(
                     f"DSID {dsid} filter efficiency: ", split[3]
                 )
+                if dsid in self.XSsection.keys():
+                    if self.XSsection[dsid] == xs:
+                        log.warning(f"DSID {dsid} already in XSsection, skipping!")
+                        continue
+                    else:
+                        log.error(f"DSID {dsid} already in XSsection and has different XS!")
+                        raise RuntimeError
                 self.XSsection[dsid] = xs
 
     def get_xs(self, dsid: str, oneIfMissing: bool = False) -> float:
