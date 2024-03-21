@@ -14,7 +14,9 @@ class _xs:
     def get_xs(self):
         return self.XS * self.kFactor * self.filtEff
 
-    def __eq__(self, other: "_xs") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, _xs):
+            raise NotImplementedError("Only _xs can be compared!")
         return self.get_xs() - other.get_xs() == 0
 
 
