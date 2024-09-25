@@ -64,7 +64,12 @@ class dataMC:
         yTitle: str = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
+        ratio_limits=(0.701, 1.299),
+        nonEmpty=True,
     ):
+        self.custom_xrange = False
+        self.nonEmpty = nonEmpty
+
         self.canvas = canvas(plotName)
 
         self.mainPad = pad(
@@ -78,20 +83,23 @@ class dataMC:
             "ratio", yh=fraction, configPath=loader.path() + "configs/pad_dm.json"
         )
         self.canvas.add_pad(self.ratioPad)
-        self.ratioPad.set_yrange(0.701, 1.299)
+        if ratio_limits is not None:
+            low, high = ratio_limits
+            self.ratioPad.set_yrange(low, high)
+
         self.ratioPad.margins(up=0)
         self.ratioPad.set_title(xTitle, ratioTitle)
-
-        self.nonEmpty = True
 
     def add_and_plot(
         self, hData: histo, _hMCs: List[histo], _hShapes: List[histo] = []
     ):
+
         if len(_hMCs) == 0:
             log.error("List of MC histograms is empty")
             raise RuntimeError
 
         self.hData = hData
+
         # stack the MC
         self.hMCs: List[histo] = []
         for _hMC in _hMCs:
@@ -104,10 +112,8 @@ class dataMC:
                 hOther.th.Add(hMC.th)
             self.hMCs.append(hMC)
 
-        if self.nonEmpty:
-            self.remove_empty()
-
         self.mainPad.add_histos(self.hMCs)
+
         self.hShapes = _hShapes
         if self.hShapes != []:
             self.mainPad.add_histos(self.hShapes)
@@ -135,7 +141,20 @@ class dataMC:
 
         self.ratioPad.plot_histos()
 
-    def remove_empty(self):
+        self.update_ranges()
+
+    def update_ranges(self):
+
+        if self.nonEmpty and not self.custom_xrange:
+            (xmin, xmax) = self._xrange_emptysupressed()
+            self.mainPad.set_xrange(xmin, xmax)
+            self.ratioPad.set_xrange(xmin, xmax)
+
+        self.mainPad.update_range()
+        self.ratioPad.update_range()
+
+    def _xrange_emptysupressed(self):
+        """Determine x range containing nonzero"""  # TODO REVIEW
         xMin = self.hData.th.GetBinLowEdge(1)
         xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
         prevCont = False
@@ -159,10 +178,11 @@ class dataMC:
             prevCont = False
         if not maxDone:
             xMax = self.hData.th.GetBinLowEdge(self.hData.th.GetNbinsX() + 1)
-        self.mainPad.set_xrange(xMin, xMax)
-        self.ratioPad.set_xrange(xMin, xMax)
+
+        return (xMin, xMax)
 
     def set_xrange(self, min, max):
+        self.custom_xrange = True
         self.mainPad.set_xrange(min, max)
         self.ratioPad.set_xrange(min, max)
 
@@ -170,7 +190,7 @@ class dataMC:
         self.mainPad.logx(doLog)
         self.ratioPad.logx(doLog)
 
-    def save(self, plotName: str):
+    def save(self, plotName: str, verbose=False):
         self.canvas.tcan.cd()
         self.leg = legend()
         self.leg.add_histo(self.hData)
@@ -179,6 +199,8 @@ class dataMC:
         if self.hShapes != []:
             self.leg.add_histos(self.hShapes)
         self.leg.create_and_draw()
+        if verbose:
+            print(plotName)
         self.canvas.save(plotName)
 
 
@@ -245,7 +267,7 @@ class Comparison:
         yTitle: str = "Events",
         ratioTitle: str = "Ratio",
         fraction: float = 0.3,
-        nonEmpty: bool = True,
+        show_nonEmptyOnly: bool = True,
     ):
         self.canvas = canvas(plotName)
 
@@ -264,7 +286,7 @@ class Comparison:
         self.ratioPad.margins(up=0)
         self.ratioPad.set_title(xTitle, ratioTitle)
 
-        self.nonEmpty = nonEmpty
+        self.nonEmpty = show_nonEmptyOnly
 
     def add_and_plot(self, histos: List[histo]):
         if len(histos) == 0:
@@ -274,6 +296,7 @@ class Comparison:
         # stack the MC
         self.histos = histos
 
+        # get xmin, xmin, empty bins are cut away
         if self.nonEmpty:
             xMin = histos[0].th.GetBinLowEdge(1)
             xMax = histos[0].th.GetBinLowEdge(histos[0].th.GetNbinsX() + 1)
