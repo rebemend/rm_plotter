@@ -3,7 +3,7 @@ import ROOT
 from ROOT import TCanvas
 from typing import Dict
 import os
-from .quiet import Quiet
+from .extern.shortuuid import uuid
 
 import logging
 
@@ -25,8 +25,7 @@ class canvas:
             y (``int``): y width of the canvas
         """
 
-        with Quiet(ROOT.kWarning + 1):
-            self.tcan = TCanvas(name, name, width, height)
+        self.tcan = TCanvas("{0}_{1}".format(name, uuid()), name, width, height)
         # TODO: still not 100% convinced we need a Dict and not just List
         self.pads: Dict[str, pad] = {}
 
