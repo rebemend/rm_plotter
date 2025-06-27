@@ -49,8 +49,10 @@ class legend:
         for h in self.histos:
             if h.inlegend is False:
                 continue
-            if "p" in h.drawoption:
+            if "P" in h.drawoption or "p" in h.drawoption:
                 self.tlegend.AddEntry(h.th, h.title, "p")
+            elif "E" in h.drawoption:
+                self.tlegend.AddEntry(h.th, h.title, "f")
             elif h.fillcolor:
                 self.tlegend.AddEntry(h.th, h.title, "f")
             else:
