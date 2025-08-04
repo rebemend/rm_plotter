@@ -417,11 +417,16 @@ class Comparison_systematics:
         self.nonEmpty = show_nonEmptyOnly
 
     def add_and_plot(self, histos: List[histo], bands: List[TGraphAsymmErrors]):
+        """ 
+        Plots histograms and uncertainty bands as well as ratio with respect to truth.
+        histos: [truth, unfolded, reco1, reco2]
+        bands: [h_statband, sys_band, hSystDownSum, hSystUpSum]
+        """
         if len(histos) == 0:
             log.error("List of MC histograms is empty")
             raise RuntimeError
 
-        # stack the MC
+        #stack the MC
         self.histos = histos
 
         # get xmin, xmin, empty bins are cut away
@@ -454,69 +459,95 @@ class Comparison_systematics:
         self.mainPad.add_histos(self.histos)
         self.mainPad.plot_histos()
 
-        #REBECA: ADDED
+        #manually adding uncertainty bands
         self.canvas.tcan.cd()  # Go to the canvas
         self.mainPad.tpad.cd()
         
         if bands != []:
-            bands[1].Draw("E2 SAME")
-            bands[0].SetFillColor(ROOT.kCyan-10)    
-            bands[0].SetFillStyle(1001)
-            bands[0].SetLineWidth(0)
-            bands[0].Draw("2 SAME")  
+            bands[0].Draw("E2 SAME")
+            bands[1].SetFillColor(ROOT.kCyan-10)    
+            bands[1].SetFillStyle(1001)
+            bands[1].SetLineWidth(0)
+            bands[1].Draw("2 SAME")  
+            hSystUpSum = bands[2]
+            hSystDownSum = bands[3]
 
+        #replotting unfolded and truth distributions to be on top of bands
         histos[0].th.Draw("HIST SAME")
         histos[1].th.Draw("P SAME")
 
+        self.hRatios = []
+
+        #ratio statistical error of truth distribution
         self.hErr = self.histos[0].get_ratio(self.histos[0])
         self.hErr.color = ROOT.kGray + 1
         # TODO: custom config
         cfgErr = loader.load_config(loader.path() + "configs/err.json")
         self.hErr.style_histo(cfgErr)
 
-        self.hRatios = []
-        #REBECA: RATIOS, dont need to get ratio for everything
-        first = True
-        for h in self.histos:
-            if first:
-                first = False
-                continue
-        #REBECA: change bands != for a variable to reduce repetitivness
-            hR = h.get_ratio(histos[0], fillToLine=False)
-            self.hRatios.append(hR)
+        #ratio of statistical error of unfolded distribution
+        if bands != []:
+            stat = bands[0].Clone()
+            h_stat = histo(
+                        'Stat_Ratio',
+                        stat,
+                        ROOT.kCyan,
+                        drawoption='histe',
+                    )
+            stat_err = h_stat.get_ratio(self.histos[0])
+            stat_err.color = ROOT.kCyan
+            cfgErr = loader.load_config(loader.path() + "configs/err.json")
+            stat_err.style_histo(cfgErr)
+            stat_err.th.SetFillStyle(1001)
 
-        self.ratioPad.add_histos([self.hErr] + self.hRatios)
+            self.hRatios.append(stat_err)
+
+        #ratio of unfolded distribution to truth
+        hR = self.histos[1].get_ratio(self.histos[0]) 
+        hR.th.SetMarkerSize(1)
+        hR.th.SetMarkerStyle(20)
+        hR.th.SetMarkerColor(ROOT.kBlack)  
+
+        #changes systematic band into two lines representing Up and Down Systematics
+        #TODO: figure out how to plot TGraphAsymmErrors on the Ratio pad
+        if bands != []:
+            ratio_up, ratio_down = self.get_syst_ratio_lines(hSystUpSum, hSystDownSum, histos[0])
+            
+            #convert ratio lines to histo class
+            h_ratio_up = histo(
+                        'Ratio',
+                        ratio_up,
+                        ROOT.kBlack,
+                        drawoption='histe',
+                    )
+            h_ratio_down = histo(
+                        'Ratio',
+                        ratio_down,
+                        ROOT.kBlack,
+                        drawoption='histe',
+                    )
+            self.hRatios.append(h_ratio_up)
+            self.hRatios.append(h_ratio_down)
+
+
+        self.ratioPad.customYrange = True
+
+        #Manually sets yaxis range to better see systematic uncertainties
+        self.ratioPad.yMin= 0.9
+        self.ratioPad.yMax= 1.1
+
+        #plots histos in ratio pad
+        self.ratioPad.add_histos(self.hRatios + [self.hErr, hR])
         self.ratioPad.plot_histos()
 
-        ratio_1 = histos[0].th.Clone()
-
-        #REBECA: Clean up
-        if bands != []:
-            self.canvas.tcan.cd()  # Go to the canvas
-            self.ratioPad.tpad.cd()
-            ratio_1 = self.get_ratio_band(bands[1], histos[0])
-            ratio_1.Draw("HIST SAME")
-            self.canvas.tcan.Update()
-            print("Ratios plotted")
-
-
-            print("ratio_1:", ratio_1)
-            print("denominator:", histos[0].th)
-            print("ratio_1 class:", type(ratio_1))
-            print("ratio_1 entries:", ratio_1.GetEntries())
-
-            c = ROOT.TCanvas("c", "", 800, 600)
-            ratio_1.Draw("HIST")
-            c.Update() 
-            c.Print("debug_output.pdf")
-
+        #adds legend in main pad
         self.canvas.tcan.cd()
         self.leg = legend()
         self.leg.add_histos(self.histos)
         self.leg.create_and_draw()
         if bands != []:
-            self.leg.tlegend.AddEntry(bands[0], 'Systematic Uncertainty', "f")
-            self.leg.tlegend.AddEntry(bands[1], 'Statistical Uncertainty', "f")
+            self.leg.tlegend.AddEntry(bands[1], 'Systematic Uncertainty', "f")
+            self.leg.tlegend.AddEntry(bands[0], 'Statistical Uncertainty', "f")
 
     def set_xrange(self, min, max):
         self.mainPad.set_xrange(min, max)
@@ -529,26 +560,44 @@ class Comparison_systematics:
     def save(self, plotName: str, verbose=False):
         self.canvas.save(plotName, verbose)
 
-    def get_ratio_band(self, numerator, denominator, suffix="_errRatio"):
-        #if isinstance(numerator, ROOT.TH1):
-        h_ratio = denominator.th.Clone()
 
-        if numerator.GetNbinsX() != denominator.th.GetNbinsX():
+    def get_syst_ratio_lines(self, hSystUpSum, hSystDownSum, denominator, suffix="_systRatio"):
+        """ Returns result of up and down sytematics each divided by a denominator distribution"""
+        if hSystUpSum.GetNbinsX() != denominator.th.GetNbinsX():
             log.error("Incompatible histograms!")
-            raise ValueError
+            raise ValueError("Histogram bin counts do not match.")
 
-        for i in range(1, denominator.th.GetNbinsX()+1):
-            if denominator.th.GetBinContent(i) != 0:
-                temp = numerator.GetBinContent(i)/denominator.th.GetBinContent(i)
-                h_ratio.SetBinContent(i, 1.1)
-                print("Temp: " + str(temp))
-                print("Bin:  " + str(h_ratio.GetBinContent(i)))
-                print("x: " + str(h_ratio.GetBinCenter(i)))
-                print("x: " + str(denominator.th.GetBinCenter(i)))
+        # Clone to get shape and axis settings
+        h_ratio_up = denominator.th.Clone("ratio_up" + suffix)
+        h_ratio_down = denominator.th.Clone("ratio_down" + suffix)
+        h_ratio_up.Reset()
+        h_ratio_down.Reset()
 
-        h_ratio.SetFillColor(ROOT.kCyan)
-        h_ratio.SetFillStyle(0)
-        h_ratio.SetLineColor(ROOT.kCyan)
-        h_ratio.SetMarkerSize(0)
+        for i in range(1, hSystUpSum.GetNbinsX() + 1):
+            denom_val = denominator.th.GetBinContent(i)
 
-        return h_ratio
+            if denom_val != 0:
+                up_val = hSystUpSum.GetBinContent(i)
+                down_val = hSystDownSum.GetBinContent(i)
+
+                h_ratio_up.SetBinContent(i, up_val / denom_val)
+                h_ratio_down.SetBinContent(i, down_val / denom_val)
+            else:
+                h_ratio_up.SetBinContent(i, 0)
+                h_ratio_down.SetBinContent(i, 0)
+
+            h_ratio_up.SetBinError(i, 0)
+            h_ratio_down.SetBinError(i, 0)
+
+        # Style
+        h_ratio_up.SetLineColor(ROOT.kBlack)
+        h_ratio_up.SetLineWidth(2)
+        h_ratio_up.SetLineStyle(ROOT.kSolid)
+        h_ratio_up.SetMarkerSize(0)
+
+        h_ratio_down.SetLineColor(ROOT.kBlack)
+        h_ratio_down.SetLineWidth(2)
+        h_ratio_down.SetLineStyle(ROOT.kSolid)
+        h_ratio_down.SetMarkerSize(0)
+
+        return h_ratio_up, h_ratio_down
